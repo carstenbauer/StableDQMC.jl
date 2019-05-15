@@ -3,6 +3,10 @@ uuid = "0827807b-44c9-51d0-af97-efe667fe6b2a"
 authors = ["Carsten Bauer <crstnbr@gmail.com>"]
 version = "0.1.0"
 
+[deps]
+GenericSVD = "01680d73-4ee2-5a08-a1aa-533608c188bb"
+JacobiSVD = "2ca068c6-2156-5cf0-8317-c67edf277a2c"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
