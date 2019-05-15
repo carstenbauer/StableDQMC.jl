@@ -40,7 +40,7 @@ end
 function inv_udv!(res, U,D,Vd)
 
   # copy here isn't necessary but Vd would be overwritten if we drop it
-  # also, m could be preallocated in stack if necessary
+  # also, m could be preallocated if necessary
   m = copy(Vd')
   rmul!(m, Diagonal(1 ./ D))
   mul!(res, m, U')
@@ -172,43 +172,34 @@ function inv_sum_udvs(Ua, Da, Vda, Ub, Db, Vdb)
     
     d=length(Da)
     
-    # separating scales larger and smaller than unity
     Dap = max.(Da,1.)
     Dam = min.(Da,1.)
     Dbp = max.(Db,1.)
     Dbm = min.(Db,1.)
 
-    # mat1 = Dam * Vda * Vdb' / Dbp
 
     mat1 = Vda * adjoint(Vdb)
     for j in 1:d, k in 1:d
         mat1[j,k]=mat1[j,k] * Dam[j]/Dbp[k]
     end
 
-    # mat2 = 1/(Dap) * Ua' * Ub * Dbm
     mat2 = adjoint(Ua) * Ub
     for j in 1:d, k in 1:d
         mat2[j,k]=mat2[j,k] * Dbm[k]/Dap[j]
     end
     
-    #mat1 = mat1 + mat2
     mat1 = mat1 + mat2
     
-    # decompose mat1: U, D, Vd
     U, D, Vd = decompose_udv!(mat1)
 
-    # invert inner part: mat1 = (U D Vd)^(-1) = mat1^(-1)
     UDV_to_mat!(mat1, U, D, Vd, invert=true)
 
-    # mat1 = 1/Dbp * mat1 /Dap
     for j in 1:d, k in 1:d
         mat1[j,k]=mat1[j,k] / Dbp[j] / Dap[k]
     end
 
-    #mat1 = U D Vd
     U, D, Vd = decompose_udv!(mat1)
 
-    # U = Vdb' * U , Vd = Vd * Ua'
     mul!(mat1, Vdb', U)
     mul!(mat2, Vd, Ua')
     U = mat1
@@ -225,46 +216,37 @@ function inv_sum_udvs!(mc, res, Ua, Da, Vda, Ub, Db, Vdb)
     
     d=length(Da)
     
-    #DXp = max (X%D, 1) ,DXm = min (X%D, 1) and similarly for Y.
     Dap = max.(Da,1.)
     Dam = min.(Da,1.)
     Dbp = max.(Db,1.)
     Dbm = min.(Db,1.)
 
-    #mat1= DXm * X%Vd * (Y%Vd)^dagger /DYp
     mat1 = Vda * adjoint(Vdb)
     for j in 1:d, k in 1:d
         mat1[j,k]=mat1[j,k] * Dam[j]/Dbp[k]
     end
 
-    #mat2 = 1/(DXp) * (X%U)^dagger * Y%U * DYm
     mat2 = adjoint(Ua) * Ub
     for j in 1:d, k in 1:d
         mat2[j,k]=mat2[j,k] * Dbm[k]/Dap[j]
     end
     
-    #mat1 = mat1+mat2
     mat1 = mat1 + mat2
     
-    #invert mat1: mat1=mat1^(-1)
     U, D, Vd = decompose_udv!(mat1)
     UDV_to_mat!(mat1, U, D, Vd, invert=true)
 
-    #mat1 = 1/DYp * mat1 /DXp
     for j in 1:d, k in 1:d
         mat1[j,k]=mat1[j,k] / Dbp[j] / Dap[k]
     end
 
-    #mat1 = U D Vd
     U, D, Vd = decompose_udv!(mat1)
 
-    # U = (Y%Vd)^dagger * U , Vd = Vd * (X%U)^dagger
     mul!(mat1,adjoint(Vdb),U)
     mul!(mat2,Vd,adjoint(Ua))
     U=mat1
     Vd=mat2
 
-    # return U, D, Vd
     UDV_to_mat!(res, U, D, Vd, invert=false)
     nothing
 end
