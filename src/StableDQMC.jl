@@ -35,9 +35,13 @@ export decompose_udv!,
     decompose_udv,
     inv_one_plus_udv,
     inv_sum_udvs,
+    gesdd!,
     gesdd,
+    gesvd!,
     gesvd,
+    genericsvd!,
     genericsvd,
+    gesvj!,
     gesvj
 
 end # module

@@ -1,10 +1,17 @@
-gesdd = x -> LinearAlgebra.LAPACK.gesdd!('A', copy(x))
-gesvd = x -> LinearAlgebra.LAPACK.gesvd!('A', 'A', copy(x))
-genericsvd = x -> (F = svd(x); return (F.U, F.S, F.Vt))
-gesvj = x -> JacobiSVD.gesvj!('G','U','V', copy(x))
+gesdd! = x -> LinearAlgebra.LAPACK.gesdd!('A', x)
+gesdd = x -> gesdd!(copy(x))
+
+gesvd! = x -> LinearAlgebra.LAPACK.gesvd!('A', 'A', x)
+gesvd = x -> gesvd!(copy(x))
+
+gesvj! = x -> JacobiSVD.gesvj!('G','U','V', x)
+gesvj = x -> gesvj!(copy(x))
+
+genericsvd! = x -> (F = svd!(x); return (F.U, F.S, F.Vt))
+genericsvd = x -> genericsvd!(copy(x))
 
 
-decompose_udv!(A::AbstractMatrix{<:Number}) = LinearAlgebra.LAPACK.gesvd!('A','A',A)
+decompose_udv!(A::AbstractMatrix{<:Number}) = gesvd!('A','A', A)
 decompose_udv(A::AbstractMatrix{T}) where T<:Number = decompose_udv!(copy(A))
 
 

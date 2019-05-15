@@ -79,7 +79,7 @@ In these notes we will empirically compare different matrix decompositions for u
 \subsubsection{Determinant quantum Monte Carlo in a nutshell}
 
 For the description of the DQMC algorithm, we consider a quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$, which comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
-interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \textcolor{red}{CITE}. As per usual, the central quantity of interest is the partition function
+interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
 %
 \begin{equation}
 \mathcal{Z} = \int D\left( \psi, \psi^\dagger, \phi \right) e^{-S_B - S_F} \,.
@@ -115,12 +115,12 @@ Only under specific circumstances, such as the presence of a symmetry, can the i
 \subsubsection{Numerical instabilities}
 
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{examples/naive_vs_stable.pdf}
+	\includegraphics[width=0.5\textwidth]{../../examples/naive_vs_stable.pdf}
 	\caption{Simple model \label{fig:naive_vs_stable}}
 \end{figure}
 
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{examples/naive_vs_stable_db64.pdf}
+	\includegraphics[width=0.5\textwidth]{../../examples/naive_vs_stable_db64.pdf}
 	\caption{Simple model \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
@@ -138,17 +138,17 @@ Only under specific circumstances, such as the presence of a symmetry, can the i
 \subsection{Accuracy}
 
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{examples/decomp_comparison.pdf}
+	\includegraphics[width=0.5\textwidth]{../../examples/decomp_comparison.pdf}
 	\caption{Spin-fermion model at $\beta = 40$ \label{fig:decomp_comparison}}
 \end{figure}
 
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{examples/decomp_comparison_simple.pdf}
+	\includegraphics[width=0.5\textwidth]{../../examples/decomp_comparison_simple.pdf}
 	\caption{Simple model system \label{fig:decomp_comparison_simple}}
 \end{figure}
 
 %\begin{figure}[h]
-%	\includegraphics[width=0.5\textwidth]{examples/svd_comparison.pdf}
+%	\includegraphics[width=0.5\textwidth]{../../examples/svd_comparison.pdf}
 %	\caption{$\beta = 40$ \label{fig:svd_comparison}}
 %\end{figure}
 
