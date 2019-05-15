@@ -114,23 +114,60 @@ Only under specific circumstances, such as the presence of a symmetry, can the i
 
 \subsubsection{Numerical instabilities}
 
+
+
+Let us consider the simple non-interacting model system
+\begin{align}
+	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + \mu \sum_i n_i \label{eq:model}
+\end{align}
+where we set the hopping amplitude to $t=-1$, the chemical potential to $\mu=-0.1$, and the Hamiltonian has simple tridiagonal form in the position basis.
+%\begin{align}
+%H = \left[
+%\begin{array}{cccccccc}
+%-0.1 & 1.0 &  &  &  &  &  &  \\
+%1.0 & -0.1 & 1.0 &  &  &  &  &  \\
+% & 1.0 & -0.1 & 1.0 &  &  &  &  \\
+% &  & \ddots & \ddots & \ddots &  &  &  \\
+%  &  &  & 1.0 & -0.1 & 1.0 &  \\
+%  &  &  &  & 1.0 & -0.1 & 1.0 \\
+%  &  &  &  &  & 1.0 & -0.1 \\
+%\end{array}
+%\right].
+%\end{align}
+
+
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{../../examples/naive_vs_stable.pdf}
-	\caption{Simple model \label{fig:naive_vs_stable}}
+	\includegraphics[width=0.45\textwidth]{../notebooks/naive_vs_stable.pdf}
+	\caption{\textbf{Numerical instabilities} (green) due to finite machine precision (Float64) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable}}
 \end{figure}
 
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{../../examples/naive_vs_stable_db64.pdf}
-	\caption{Simple model \label{fig:naive_vs_stable_db64}}
+	\includegraphics[width=0.45\textwidth]{../notebooks/naive_vs_stable_db64.pdf}
+	\caption{\textbf{Numerical instabilities} due to finite machine precision (Double64) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
 \section{\label{sec:decompositions}Matrix decompositions for the rescue}
 
-\subsubsection{SVD}
+Stable multiplication:
+\begin{align}
+B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
+&= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\ &= U_r D_r X_r,
+\end{align}
+with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$.
 
-\subsubsection{QR}
+Stable inversion:
 
-\subsubsection{Gram-Schmidt}
+\begin{align}
+[1 + UDX]^{-1} &= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \\
+&= [(Uu)d(xX)]^{-1} \nonumber\\
+&= (xX)^{-1} d (Uu)^{-1}\nonumber\\
+&= U_r D_r X_r,
+\end{align}
+with $U_r = (xX)^{-1}$, $D_r = d$, $X_r = (Uu)^{-1}$.
+
+\subsection{SVD ($UDV^\dagger$)}
+
+\subsection{QR ($UDT$)}
 
 
 \section{Benchmarks}
@@ -138,18 +175,13 @@ Only under specific circumstances, such as the presence of a symmetry, can the i
 \subsection{Accuracy}
 
 \begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{../../examples/decomp_comparison.pdf}
-	\caption{Spin-fermion model at $\beta = 40$ \label{fig:decomp_comparison}}
-\end{figure}
-
-\begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{../../examples/decomp_comparison_simple.pdf}
-	\caption{Simple model system \label{fig:decomp_comparison_simple}}
+	\includegraphics[width=0.45\textwidth]{../notebooks/decomp_comparison_simple.pdf}
+	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$). \label{fig:decomp_comparison_simple}}
 \end{figure}
 
 %\begin{figure}[h]
-%	\includegraphics[width=0.5\textwidth]{../../examples/svd_comparison.pdf}
-%	\caption{$\beta = 40$ \label{fig:svd_comparison}}
+%	\includegraphics[width=0.45\textwidth]{../notebooks/decomp_comparison.pdf}
+%	\caption{Spin-fermion model at $\beta = 40$ \label{fig:decomp_comparison}}
 %\end{figure}
 
 
@@ -158,9 +190,9 @@ Only under specific circumstances, such as the presence of a symmetry, can the i
 
 
 
-%\section{The time-displaced Green's function}
-
-
+\section{The time-displaced Green's function}
+Scalettar and other's method \cite{Loh2005}
+Hirsch method\cite{Hirsch1988}
 
 
 
