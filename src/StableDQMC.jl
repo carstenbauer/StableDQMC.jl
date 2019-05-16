@@ -44,5 +44,7 @@ export genericsvd!
 export genericsvd
 export gesvj!
 export gesvj
+export calc_product_chain
+export calc_product_chain_stabilized
 
 end # module

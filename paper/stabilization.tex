@@ -231,70 +231,93 @@ Before benchmarking the efficiency of an algorithm, it is crucial to check it's 
 
 Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversion according to Eq.~\eqref{eq:inversion}. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings are shown in Table~\ref{tbl:greens_accuracy}. At high temperatures, $\beta = 5$, all decompositions give the correct Green's function close to floating point precision. However, at low temperatures, $\beta = 40$, only the QR decomposition reproduces $G_{exact}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which happen to perform poorly.
 
-\begin{table}[b]
-	\bgroup
-	\def\arraystretch{1.25}%  1 is the default, change whatever you need
-	\begin{tabular}{ccc}
-		$\beta = 5$ & Method & $\textrm{max}(G - G_{\textrm{exact}})$ \\
-		\hline
-		& QR & 6.1e-16 \\ 
 
-		& SVD, simple & 8.1e-14 \\ 
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_regularinv.pdf}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme from Eq.~\eqref{eq:inversion}. \label{fig:greens_accuracy_regularinv}}
+\end{figure}
 
-		& SVD, D\&C & 6.9e-14 \\ 
-
-		& SVD, Jacobi & 6.1e-14 \\ 
-		\hline
-		& \\ 
-		$\beta = 40$ & Method & $\textrm{max}(G - G_{\textrm{exact}})$ \\
-		\hline
-		
-		& QR & 1.2e-15 \\ 
-
-		& SVD, simple & 3.3e-1 \\ 
-
-		& SVD, D\&C & 4.0e-1 \\ 
-
-		& SVD, Jacobi & 3.1e-4 \\ 
-		\hline
-	\end{tabular}
-	\egroup
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions at high ($\beta = 5$) and low temperatures ($\beta = 40$). \label{tbl:greens_accuracy}}
-\end{table}
+\begin{figure}[t]
+	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_scalettar.pdf}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:greens_accuracy_scalettar}}
+\end{figure}
 
 
+%\begin{table}[b]
+%	\bgroup
+%	\def\arraystretch{1.25}%  1 is the default, change whatever you need
+%	\begin{tabular}{ccc}
+%		$\beta = 5$ & Method & $\textrm{max}(\textrm{abs}(G - G_{\textrm{exact}}))$ \\
+%		\hline
+%		& QR & 6.1e-16 \\ 
+%
+%		& SVD, simple & 8.1e-14 \\ 
+%
+%		& SVD, D\&C & 6.9e-14 \\ 
+%
+%		& SVD, Jacobi & 6.1e-14 \\ 
+%		\hline
+%		& \\ 
+%		$\beta = 40$ & Method & $\textrm{max}(\textrm{abs}(G - G_{\textrm{exact}}))$ \\
+%		\hline
+%		
+%		& QR & 1.2e-15 \\ 
+%
+%		& SVD, simple & 4.7e-1 \\ 
+%
+%		& SVD, D\&C & 4.9e-1 \\ 
+%
+%		& SVD, Jacobi & 3.1e-4 \\ 
+%		\hline
+%	\end{tabular}
+%	\egroup
+%	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions at high ($\beta = 5$) and low temperatures ($\beta = 40$). \label{tbl:greens_accuracy}}
+%\end{table}
 
 
-\begin{table}
-	\bgroup
-	\def\arraystretch{1.25}%  1 is the default, change whatever you need
-	\begin{tabular}{cccc}
-		$\beta = 5$ & Method & $\Delta_\textrm{abs} (\textrm{det} G)$ & $\Delta_\textrm{rel}(\textrm{det} G)$ \\
-		\hline
-		& QR & 2.3e-27 & 1.1e-15 \\ 
-		
-		& SVD, simple & 3.2e-26 & 1.5e-14 \\ 
-		
-		& SVD, D\&C & 1.8e-25 & 8.5e-14 \\ 
-		
-		& SVD, Jacobi & 1.2e-25 & 5.7e-14 \\ 
-		\hline
-		& \\ 
-		$\beta = 40$ & Method & $\Delta_\textrm{abs}(\textrm{det} G)$ & $\Delta_\textrm{rel}(\textrm{det} G)$ \\
-		\hline
-		
-		& QR & 4.1e-107 & 7.7-15 \\ 
-		
-		& SVD, simple & 4.5e-90 & 1.0e-0 \\ 
-		
-		& SVD, D\&C & 2.6e-93 & 1.0e-0 \\ 
-		
-		& SVD, Jacobi & 8.8e-97 & 1.7e-4 \\ 
-		\hline
-	\end{tabular}
-	\egroup
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions at high ($\beta = 5$) and low temperatures ($\beta = 40$). \label{tbl:det_accuracy}}
-\end{table}
+
+
+%\begin{table}
+%	\bgroup
+%	\def\arraystretch{1.25}%  1 is the default, change whatever you need
+%	\begin{tabular}{cccc}
+%		$\beta = 5$ & Method & $\Delta_\textrm{abs} (\textrm{det} G)$ & $\Delta_\textrm{rel}(\textrm{det} G)$ \\
+%		\hline
+%		& QR & 2.3e-27 & 1.1e-15 \\ 
+%		
+%		& SVD, simple & 3.2e-26 & 1.5e-14 \\ 
+%		
+%		& SVD, D\&C & 1.8e-25 & 8.5e-14 \\ 
+%		
+%		& SVD, Jacobi & 1.2e-25 & 5.7e-14 \\ 
+%		\hline
+%		& \\ 
+%		$\beta = 40$ & Method & $\Delta_\textrm{abs}(\textrm{det} G)$ & $\Delta_\textrm{rel}(\textrm{det} G)$ \\
+%		\hline
+%		
+%		& QR & 4.1e-107 & 7.7-15 \\ 
+%		
+%		& SVD, simple & 4.5e-90 & 1.0e-0 \\ 
+%		
+%		& SVD, D\&C & 2.6e-93 & 1.0e-0 \\ 
+%		
+%		& SVD, Jacobi & 8.8e-97 & 1.7e-4 \\ 
+%		\hline
+%	\end{tabular}
+%	\egroup
+%	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions at high ($\beta = 5$) and low temperatures ($\beta = 40$). \label{tbl:det_accuracy}}
+%\end{table}
+
+
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_regularinv.pdf}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme from Eq.~\eqref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
+\end{figure}
+
+\begin{figure}[t]
+	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_scalettar.pdf}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:det_accuracy_scalettar}}
+\end{figure}
 
 
 
