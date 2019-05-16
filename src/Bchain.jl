@@ -43,5 +43,5 @@ function calc_product_chain_stabilized(B, N, decomposition_method)
         svc += 1
     end
     
-    return (U * Diagonal(D) * X, svs)
+    return U, D, X, svs
 end

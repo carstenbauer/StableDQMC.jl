@@ -11,7 +11,7 @@ genericsvd! = x -> (F = svd!(x); return (F.U, F.S, F.Vt))
 genericsvd = x -> genericsvd!(copy(x))
 
 
-decompose_udv!(A::AbstractMatrix{<:Number}) = gesvd!('A','A', A)
+decompose_udv!(A::AbstractMatrix{<:Number}) = gesvd!(A)
 decompose_udv(A::AbstractMatrix{T}) where T<:Number = decompose_udv!(copy(A))
 
 
