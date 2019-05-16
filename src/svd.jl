@@ -4,7 +4,8 @@ gesdd = x -> gesdd!(copy(x))
 gesvd! = x -> LinearAlgebra.LAPACK.gesvd!('A', 'A', x)
 gesvd = x -> gesvd!(copy(x))
 
-gesvj! = x -> JacobiSVD.gesvj!('G','U','V', x)
+# gesvj! = x -> JacobiSVD.gesvj!('G','U','V', x)
+gesvj! = x -> (F = JacobiSVD.jsvd!(x); return (F.U, F.S, F.Vt))
 gesvj = x -> gesvj!(copy(x))
 
 genericsvd! = x -> (F = svd!(x); return (F.U, F.S, F.Vt))

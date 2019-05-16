@@ -118,7 +118,7 @@ We consider the following simple non-interacting model system in one dimension,
 \begin{align}
 	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + \mu \sum_i n_i \label{eq:model},
 \end{align}
-where we set the hopping amplitude to $t=-1$, the chemical potential to $\mu=-0.1$, and the Hamiltonian has a simple tridiagonal form in the position basis.
+where we set the hopping amplitude to $t=-1$ and the chemical potential to $\mu=-0.1$.
 %\begin{align}
 %H = \left[
 %\begin{array}{cccccccc}
@@ -144,7 +144,7 @@ B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label
 \end{align}
 Here the second equality stems from the fact that our model, Eq.~\ref{eq:model}, is non-interacting and the slice matrices $B_l$ do neither depend on any Hubbard-Stratonovich boson field nor on imaginary time.
 
-In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $M \geq M_c \approx 100$. Leaving a discussion of how to stabilize the product for the next section, let us understand the origin of this instability. The eigenvalues of our system are given by
+In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $M \geq M_c \approx 100$. Leaving a discussion of how to stabilize the product for the next section, let us understand the origin of this instability. The eigenvalues of the system are given by
 \begin{align}
 	&\epsilon_k = -2t\cos(k) + \mu.
 \end{align}
@@ -226,8 +226,41 @@ In the following we want to assess how the mentioned matrix decompositions perfo
 
 Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain Eq.~\ref{eq:Bchain} stabilized with different matrix decompositions as a function of it's length $M$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.
 
-LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'
+\textcolor{red}{LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'}
 
+
+Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversion according to Eq.~\eqref{eq:inversion}. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings are shown in Table~\ref{tbl:greens_accuracy}. At high temperatures, $\beta = 5$, all decompositions give the correct Green's function close to floating point precision. However, at low temperatures, $\beta = 40$, only the QR decomposition reproduces $G_{exact}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which happen to perform poorly.
+
+\begin{table}[b]
+	\bgroup
+	\def\arraystretch{1.25}%  1 is the default, change whatever you need
+	\begin{tabular}{ccc}
+		$\beta = 5$ & Method & $\textrm{max}(G - G_{\textrm{exact}})$ \\
+		\hline
+		& QR & 6.1e-16 \\ 
+
+		& SVD, simple & 8.1e-14 \\ 
+
+		& SVD, D\&C & 6.9e-14 \\ 
+
+		& SVD, Jacobi & 6.1e-14 \\ 
+		\hline
+		& \\ 
+		$\beta = 40$ & Method & $\textrm{max}(G - G_{\textrm{exact}})$ \\
+		\hline
+		
+		& QR & 1.2e-15 \\ 
+
+		& SVD, simple & 3.3e-1 \\ 
+
+		& SVD, D\&C & 4.0e-1 \\ 
+
+		& SVD, Jacobi & 3.1e-4 \\ 
+		\hline
+	\end{tabular}
+	\egroup
+	\caption{\textbf{Accuracy of equal-time Green's function} obtained from stabilized computations using the listed matrix decompositions at high ($\beta = 5$) and low temperatures ($\beta = 40$). \label{tbl:greens_accuracy}}
+\end{table}
 
 
 %\begin{figure}[h]
