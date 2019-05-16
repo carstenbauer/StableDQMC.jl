@@ -85,7 +85,7 @@ interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratono
 \mathcal{Z} = \int D\left( \psi, \psi^\dagger, \phi \right) e^{-S_B - S_F} \,.
 \end{equation}
 %
-The basic idea is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory as in the path integral framework. The first step is to discretize and Trotter decompose the imaginary time $\tau$,
+The basic idea is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory as in the path integral framework. The first step is to discretize, $\beta = M \Delta \tau$, and Trotter decompose the imaginary time $\tau$,
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[\exp{\left( -\Delta\tau \sum_{l=1}^M \psi^\dagger \left[T + V_\phi\right] \psi \right)}\right]} \label{eq:discretizedpi} \,.
@@ -101,7 +101,7 @@ The exponential is then separated and the appearing commutator ignored which res
 Note that the potential part $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ in the time-slice propagators $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ depends on the boson $\phi$ due to the present fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \textcolor{red}{CITE}, yields the fundamental form
 %
 \begin{align}
-	\mathcal{Z} &= \int D\phi \ e^{-S_B} \det{G_\phi^{-1}} + \mathcal{O}\left(\Delta\tau^2\right),
+	\mathcal{Z} &= \int D\phi \ e^{-S_B} \det{G_\phi^{-1}} + \mathcal{O}\left(\Delta\tau^2\right), \label{eq:DQMC}
 \end{align}
 %
 where
@@ -112,15 +112,13 @@ is the equal-time Green's function.
 
 Only under specific circumstances, such as the presence of a symmetry, can the integral kernel be safely be interpreted as a probability weight, as $G_\phi$ and its determinant are generally complex valued (\textit{sign problem}).
 
-\subsubsection{Numerical instabilities}
+\subsubsection{Numerical instabilities - Model system}
 
-
-
-Let us consider the simple non-interacting model system
+We consider the following simple non-interacting model system in one dimension,
 \begin{align}
-	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + \mu \sum_i n_i \label{eq:model}
+	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + \mu \sum_i n_i \label{eq:model},
 \end{align}
-where we set the hopping amplitude to $t=-1$, the chemical potential to $\mu=-0.1$, and the Hamiltonian has simple tridiagonal form in the position basis.
+where we set the hopping amplitude to $t=-1$, the chemical potential to $\mu=-0.1$, and the Hamiltonian has a simple tridiagonal form in the position basis.
 %\begin{align}
 %H = \left[
 %\begin{array}{cccccccc}
@@ -134,50 +132,103 @@ where we set the hopping amplitude to $t=-1$, the chemical potential to $\mu=-0.
 %\end{array}
 %\right].
 %\end{align}
+Generally, we are interested in the equal time Green's function $G$, Eq.~\eqref{etgf}, as an observable and it's determinant, which enters into the probability weight in Eq.~$\eqref{eq:DQMC}$. Let's make the latter point a bit more precise. In a Metropolis scheme it is actually the ratio of determinants,
+\begin{align}
+\dfrac{\det G'^{-1}}{\det G^{-1}} = \dfrac{\det G}{\det G'},
+\end{align}
+which determines the acceptance or rejection of a proposed (primed $G$) Markov walker step.
 
+We will showcase the issue of numerical instabilities arising in the computation of $G$ by discussing the accuracy of the calculation of the building block of $G$, the slice matrix product chain
+\begin{align}
+B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
+\end{align}
+Here the second equality stems from the fact that our model, Eq.~\ref{eq:model}, is non-interacting and the slice matrices $B_l$ do neither depend on any Hubbard-Stratonovich boson field nor on imaginary time.
 
-\begin{figure}[h]
+In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $M \geq M_c \approx 100$. Leaving a discussion of how to stabilize the product for the next section, let us understand the origin of this instability. The eigenvalues of our system are given by
+\begin{align}
+	&\epsilon_k = -2t\cos(k) + \mu.
+\end{align}
+Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. The positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$ and the product chain, Eq.~\ref{eq:Bchain}, has $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$. We therefore see that the condition number diverges at low temperatures $T=1/\beta = 1/(M \Delta\tau)$ where $M$ is large. In this case roundoff errors due to finite machine precision will spoil the result. We can estimate the breakdown of the computation for the data type \texttt{Float64}, that is double floating-point precision\cite{Goldberg1991}, by solving $\kappa(M) \sim 10^{-17}$ for $M_c$. We find $M_c \approx 100$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures.
+
+\begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{../notebooks/naive_vs_stable.pdf}
-	\caption{\textbf{Numerical instabilities} (green) due to finite machine precision (Float64) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable}}
+	\caption{\textbf{Numerical instabilities} (green) due to finite machine precision (\texttt{Float64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable}}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{../notebooks/naive_vs_stable_db64.pdf}
-	\caption{\textbf{Numerical instabilities} due to finite machine precision (Double64) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
+	\caption{\textbf{Numerical instabilities} due to finite machine precision (\texttt{Double64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
-\section{\label{sec:decompositions}Matrix decompositions for the rescue}
+\section{\label{sec:decompositions}Matrix decompositions}
 
-Stable multiplication:
+One way to solve all problems is to switch to arbitrary precision numerics. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (very) slow performance since, among other things, \texttt{BigFloat} lacks hardware support. Arbitrary precision numerics is still a valuable tool and we will use it to benchmark the accuracy of stabilization methods below.
+
+How can we remedy the numerical issue outlined above in a floating point precision computation? The idea is to keep different scales separated throughout the computation as long as possible and only mix them in the final step if necessary. A way to realize this is by deploying matrix decompositions, which we write generally as
+\begin{align}
+	B = UDX.
+\end{align}
+Here, $U$ and $X$ are matrices of scale $\sim 1$ and $D$ is a real diagonal matrix containing all the different scales of $B$ on the diagonal. We will refer to the values in $D$ as singular values independent of the particular decomposition.
+
+Instead of calculating the matrix product $B_2 B_1$, we compute
+
 \begin{align}
 B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
-&= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\ &= U_r D_r X_r,
+&= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\
+&= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$.
+with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\eqref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.}
 
-Stable inversion:
+Using this result, we have to be careful to separate scales in the equal-time Green's function calculation, Eq.~\ref{etgf}, as well. A stable way to add the unit matrix and perform the inversion is
 
 \begin{align}
-[1 + UDX]^{-1} &= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \\
-&= [(Uu)d(xX)]^{-1} \nonumber\\
+[1 + UDX]^{-1} &= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \nonumber\\
+&= [(Uu)d(xX)]^{-1} \label{eq:inversion}\\
 &= (xX)^{-1} d (Uu)^{-1}\nonumber\\
-&= U_r D_r X_r,
+&= U_r D_r X_r \nonumber,
 \end{align}
-with $U_r = (xX)^{-1}$, $D_r = d$, $X_r = (Uu)^{-1}$.
+with $U_r = (xX)^{-1}$, $D_r = d$, $X_r = (Uu)^{-1}$. \nonumber
 
-\subsection{SVD ($UDV^\dagger$)}
+So far we haven't specified the concrete decomposition $B = UDX$. In fact, there are a couple of choices. We will consider presumably most popular ones below.
 
-\subsection{QR ($UDT$)}
+\subsubsection{SVD ($UDV^\dagger$)}
+A SVD is given by
+\begin{align}
+	B = UDV^\dagger,
+\end{align}
+where $U$ is unitary, $D$ is a real diagonal matrix, and $V^\dagger$ is unitary. In this case we can use the unitarity of $U$ and $V^\dagger$ to calculate inverse terms like, for example, $(Uu)^{-1}$ in the last line of \ref{eq:inversion} as $(Uu)^{-1} = u^\dagger U^\dagger$, which is generally cheaper.
 
+Julia offers a couple of purely-Julia SVD implementations, like \href{https://github.com/JuliaLinearAlgebra/GenericSVD.jl/}{GenericSVD.jl}, which we will use for \texttt{BigFloat} computations. However, some of the most optimized algorithms are part of LAPACK\cite{LAPACK} and Julia defaults to those algorithms for regular floating point types. Concretely, there are three SVD functions\footnote{Note that Fortran LAPACK functions are named according to realness and symmetries of the matrix. In Julia multiple-dispatch takes care of routing different matrix types to different \textit{methods}. The Julia function \texttt{gesdd} works for both real and complex matrices, i.e. there is no (need for) \texttt{cgesdd}.} implementing different algorithms:
+\begin{itemize}
+	\item \texttt{gesdd} (default): Divide-and-conquer (D\&C)
+	\item \texttt{gesvd}: Simple
+	\item \texttt{gesvj}: Jacobi algorithm (through \href{https://github.com/RalphAS/JacobiSVD.jl}{JacobiSVD.jl})
+\end{itemize}
+We will compare all of them below.
+
+\subsubsection{QR ($UDT$)}
+A QR decomposition reads
+\begin{align}
+B = QR = UDT,
+\end{align}
+where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular.
 
 \section{Benchmarks}
 
+In the following we want to assess how the mentioned matrix decompositions perform in stable computations of the slice matrix product chain $B_M \cdots B_1$, the Green's function $G$, and it's determinant $\det G$, both with respect to accuracy and speed, for our model system in Eq.~\ref{eq:model}.
+
 \subsection{Accuracy}
 
-\begin{figure}[h]
+\begin{figure}
 	\includegraphics[width=0.45\textwidth]{../notebooks/decomp_comparison_simple.pdf}
-	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$). \label{fig:decomp_comparison_simple}}
+	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values seem to lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$). \label{fig:decomp_comparison_simple}}
 \end{figure}
+
+Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain Eq.~\ref{eq:Bchain} stabilized with different matrix decompositions as a function of it's length $M$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.
+
+LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'
+
+
 
 %\begin{figure}[h]
 %	\includegraphics[width=0.45\textwidth]{../notebooks/decomp_comparison.pdf}
