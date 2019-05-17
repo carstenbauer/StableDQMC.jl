@@ -242,11 +242,11 @@ Before benchmarking the efficiency of an algorithm, it is crucial to check it's 
 \end{figure}
 
 \begin{figure}[t]
-	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_scalettar.pdf}
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:greens_accuracy_scalettar}}
+	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_loh.pdf}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:greens_accuracy_loh}}
 \end{figure}
 
-Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme in Eq.~\ref{eq:inversion} are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_scalettar}, switching to the more careful procedure, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity. This suggests that only the QR decomposition, independent of the inversion procedure, and the Jacobi SVD in combination with Eq.~\ref{eq:inversion_loh} are suited for computing the equal time Green's function reliably.
+Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme in Eq.~\ref{eq:inversion} are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity. This suggests that only the QR decomposition, independent of the inversion procedure, and the Jacobi SVD in combination with Eq.~\ref{eq:inversion_loh} are suited for computing the equal time Green's function reliably.
 
 
 \begin{figure}[b]
@@ -255,11 +255,11 @@ Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the result
 \end{figure}
 
 \begin{figure}[b]
-	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_scalettar.pdf}
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:det_accuracy_scalettar}}
+	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_loh.pdf}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:det_accuracy_loh}}
 \end{figure}
 
-In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_scalettar} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance, obtained for all combinations of matrix decompositions and inversion schemes. Similar to the results of the last paragraph, only the QR decomposition leads to accurate results for all accessed temperatures, irrespective the employed inversion scheme, whereas all SVD methods show large relative errors. Interestingly, using the Jacobi SVD and Eq.~\ref{eq:inversion_loh} for the inversion doesn't remedy the numerical issues for the Green's function determinant. We also note that the latter inversion scheme does generally lead to more imprecise results than the simpler one in Eq.~\ref{eq:inversion}.
+In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_loh} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance, obtained for all combinations of matrix decompositions and inversion schemes. Similar to the results of the last paragraph, only the QR decomposition leads to accurate results for all accessed temperatures, irrespective the employed inversion scheme, whereas all SVD methods show large relative errors. Interestingly, using the Jacobi SVD and Eq.~\ref{eq:inversion_loh} for the inversion doesn't remedy the numerical issues for the Green's function determinant. We also note that the latter inversion scheme does generally lead to more imprecise results than the simpler one in Eq.~\ref{eq:inversion}.
 
 
 %\begin{table}[b]

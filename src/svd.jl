@@ -86,7 +86,7 @@ end
 
 # Calculates (1 + UDVd)^-1, where U, D, Vd come from SVD decomp.
 # More controlled handling of scales, however also slower.
-function inv_one_plus_udv_scalettar(U,D,Vd)
+function inv_one_plus_udv_loh(U,D,Vd)
   Dp = max.(D,1.)
   Dm = min.(D,1.)
   Dpinv = 1 ./ Dp
@@ -112,7 +112,7 @@ end
 
 # TODO: Optimize!
 # I only made the function overwrite res. Otherwise it's unchanged compared to the one above.
-function inv_one_plus_udv_scalettar!(mc, res, U,D,Vd)
+function inv_one_plus_udv_loh!(mc, res, U,D,Vd)
   # all similars here could go into mc.s
   Dp = similar(D)
   Dm = similar(D)

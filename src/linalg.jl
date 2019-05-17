@@ -15,3 +15,12 @@ function mul!(C::StridedMatrix, X::StridedMatrix, A::SparseMatrixCSC)
     end
     C
 end
+
+
+"""
+Calculate the condition number from the given singular values
+"""
+function LinearAlgebra.cond(svs::AbstractVector)
+    mi, ma = extrema(svs)
+    ma / mi
+end

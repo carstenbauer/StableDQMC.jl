@@ -90,7 +90,7 @@ Stable calculation of [1 + UDT]^(-1):
 
   * Use one intermediate UDT decomposition.
 
-Faster but less accurate than the scalettar approach.
+Faster but less accurate than the loh approach.
 
 Consider `inv_one_plus_udt!` as an efficient (not one-to-one) replacement.
 """
@@ -126,7 +126,7 @@ Stable calculation of [1 + UDT]^(-1):
 
 Uses preallocated memory in `mc`. Writes the result into `res`.
 
-Much faster (~50%) than `inv_one_plus_udt_scalettar!` but less accurate.
+Much faster (~50%) than `inv_one_plus_udt_loh!` but less accurate.
 """
 function inv_one_plus_udt!(mc, res, U,D,T)
   @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
@@ -234,7 +234,7 @@ end
 
 """
 
-  inv_one_plus_udt_scalettar!(mc, res, Ua, Da, Ta, Ub, Db, Tb) -> nothing
+  inv_one_plus_udt_loh!(mc, res, Ua, Da, Ta, Ub, Db, Tb) -> nothing
 
 Stable calculation of [1 + UDT]^(-1):
 
@@ -243,7 +243,7 @@ Stable calculation of [1 + UDT]^(-1):
 
 Uses preallocated memory in `mc`. Writes the result into `res`.
 """
-function inv_one_plus_udt_scalettar!(mc, res, U,D,T)
+function inv_one_plus_udt_loh!(mc, res, U,D,T)
   d = mc.s.d
   r = mc.s.tmp
   l = mc.s.tmp2
@@ -290,7 +290,7 @@ Stable calculation of [UaDaTa + UbDbTb]^(-1):
 
   * Use one intermediate UDT decompositions.
 
-Faster but less accurate than `inv_sum_udts_scalettar`.
+Faster but less accurate than `inv_sum_udts_loh`.
 
 Consider `inv_sum_udts!` as an efficient (not one-to-one) replacement.
 """
@@ -329,7 +329,7 @@ Stable calculation of [UaDaTa + UbDbTb]^(-1):
 
 Uses preallocated memory in `mc`. Writes the result into `res`.
 
-Much faster (~40%) than `inv_sum_udts_scalettar!` but less accurate.
+Much faster (~40%) than `inv_sum_udts_loh!` but less accurate.
 """
 function inv_sum_udts!(mc, res, Ua,Da,Ta,Ub,Db,Tb)
   @warn "Calling potentially inaccurate `inv_sum_udts!`"
@@ -366,17 +366,17 @@ end
 
 """
 
-  inv_sum_udts_scalettar(Ua, Da, Ta, Ub, Db, Tb) -> U, D, T
+  inv_sum_udts_loh(Ua, Da, Ta, Ub, Db, Tb) -> U, D, T
 
 Stable calculation of [UaDaTa + UbDbTb]^(-1):
 
   * Separate scales larger and smaller than unity
   * Use two intermediate UDT decompositions.
 
-Consider `inv_sum_udts_scalettar!` as an efficient (not one-to-one) replacement.
+Consider `inv_sum_udts_loh!` as an efficient (not one-to-one) replacement.
 """
-function inv_sum_udts_scalettar(Ua, Da, Ta, Ub, Db, Tb)
-    @warn "Calling somewhat inefficient `inv_sum_udts_scalettar`"
+function inv_sum_udts_loh(Ua, Da, Ta, Ub, Db, Tb)
+    @warn "Calling somewhat inefficient `inv_sum_udts_loh`"
 
     d=length(Da)
     
@@ -436,7 +436,7 @@ end
 
 """
 
-  inv_sum_udts_scalettar!(mc, res, Ua, Da, Ta, Ub, Db, Tb) -> nothing
+  inv_sum_udts_loh!(mc, res, Ua, Da, Ta, Ub, Db, Tb) -> nothing
 
 Stable calculation of [UaDaTa + UbDbTb]^(-1):
 
@@ -445,7 +445,7 @@ Stable calculation of [UaDaTa + UbDbTb]^(-1):
 
 Uses preallocated memory in `mc`. Writes the result into `res`.
 """
-function inv_sum_udts_scalettar!(mc, res, Ua, Da, Ta, Ub, Db, Tb)
+function inv_sum_udts_loh!(mc, res, Ua, Da, Ta, Ub, Db, Tb)
     # optimization rounds: 1
     mat1 = mc.s.tmp
     mat2 = mc.s.U
