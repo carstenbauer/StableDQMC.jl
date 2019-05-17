@@ -76,7 +76,7 @@ In these notes we will empirically compare different matrix decompositions for u
 
 \section{\label{sec:why}The issue}
 
-\subsubsection{Determinant quantum Monte Carlo in a nutshell}
+\subsection{Determinant quantum Monte Carlo in a nutshell}
 
 For the description of the DQMC algorithm\cite{Blankenbecler1981}, we consider a quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$, which comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
 interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
@@ -112,7 +112,7 @@ is the equal-time Green's function.
 
 Only under specific circumstances, such as the presence of a symmetry, can the integral kernel be safely be interpreted as a probability weight, as $G_\phi$ and its determinant are generally complex valued (\textit{sign problem}).
 
-\subsubsection{Numerical instabilities - Model system}
+\subsection{Numerical instabilities - Model system}
 
 We consider the following simple non-interacting model system in one dimension,
 \begin{align}
@@ -199,7 +199,7 @@ with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. Here, we initially separate the 
 
 So far we haven't specified the concrete decomposition $B = UDX$. In fact, there are a couple of choices. We will consider presumably most popular ones below.
 
-\subsubsection{SVD ($UDV^\dagger$)}
+\subsection{SVD ($UDV^\dagger$)}
 A SVD is given by
 \begin{align}
 	B = UDV^\dagger,
@@ -214,7 +214,7 @@ Julia offers a couple of purely-Julia SVD implementations, like \href{https://gi
 \end{itemize}
 We will compare all of them below.
 
-\subsubsection{QR ($UDT$)}
+\subsection{QR ($UDT$)}
 A QR decomposition reads
 \begin{align}
 B = QR = UDT,
