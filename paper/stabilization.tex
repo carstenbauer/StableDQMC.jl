@@ -160,7 +160,7 @@ Neglecting the contribution by the chemical potential for simplicity, the energy
 	\caption{\textbf{Numerical instabilities} due to finite machine precision (\texttt{Double64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
-\section{\label{sec:decompositions}Matrix decompositions}
+\section{\label{sec:stabilization}Stabilization schemes}
 
 One way to solve all problems is to switch to arbitrary precision numerics. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (very) slow performance since, among other things, \texttt{BigFloat} lacks hardware support. Arbitrary precision numerics is still a valuable tool and we will use it to benchmark the accuracy of stabilization methods below.
 
@@ -179,15 +179,23 @@ B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumbe
 \end{align}
 with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\eqref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.}
 
-Using this result, we have to be careful to separate scales in the equal-time Green's function calculation, Eq.~\ref{etgf}, as well. A stable way to add the unit matrix and perform the inversion is
+Using this result, we have to be careful to separate scales in the equal-time Green's function calculation, Eq.~\ref{etgf}, as well. A straightforward procedure to add the unit matrix and perform the inversion in a stabilized manner is given by
 
 \begin{align}
-[1 + UDX]^{-1} &= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \nonumber\\
+[\mathbb{1} + UDX]^{-1} &= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \nonumber\\
 &= [(Uu)d(xX)]^{-1} \label{eq:inversion}\\
 &= (xX)^{-1} d (Uu)^{-1}\nonumber\\
 &= U_r D_r X_r \nonumber,
 \end{align}
-with $U_r = (xX)^{-1}$, $D_r = d$, $X_r = (Uu)^{-1}$. \nonumber
+with $U_r = (xX)^{-1}$, $D_r = d$, $X_r = (Uu)^{-1}$.
+
+Another prescription\cite{Loh2005, Loh1989}, trying to take even more care of scale mixing, is
+\begin{align}
+	[\mathbb{1} + UDX]^{-1} &= [(D_p^{-1} X^{-1} + U D_m) D_p X]^{-1} \nonumber \\
+	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{D_p^{-1} X^{-1} + UD_m}_{udx})^{-1}]}_{udx} \\
+	&= U_r D_r X_r, \nonumber
+\end{align}
+with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. Here, we initially separate the scales in $D$ as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions to stabilize the inversion and recombination. We will see below that it is sometimes necessary to rely on this second procedure to obtain accurate results for $G$.\\
 
 So far we haven't specified the concrete decomposition $B = UDX$. In fact, there are a couple of choices. We will consider presumably most popular ones below.
 
