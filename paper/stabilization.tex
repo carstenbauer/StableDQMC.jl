@@ -21,6 +21,7 @@
 \documentclass[%
  reprint,
 superscriptaddress,
+citeautoscript,
 %groupedaddress,
 %unsortedaddress,
 %runinaddress,
@@ -66,7 +67,7 @@ longbibliography,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-In these notes we will empirically compare different matrix decompositions for use in numerical stabilization in many-body quantum Monte Carlo simulation, in particular when calculating equal time Green's functions. We will both benchmark their speed and accuracy. We will further show that special care has to be taken when calculating time-displaced Green's functions and will review a well-known but somewhat hard to find method for stabilizing the necessary inversion in this case. We will focus on and use the Julia programming language for all calculations. An implementation of all discussed methods is available in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{StableDQMC.jl}.
+In these notes we will empirically compare different matrix decompositions for use in numerical stabilization in many-body quantum Monte Carlo simulation, in particular when calculating equal time Green's functions. We will both benchmark their speed and accuracy. We will further show that special care has to be taken when calculating time-displaced Green's functions and will review a well-known but somewhat hard to find method for stabilizing the necessary inversion in this case. We will focus on and use the Julia programming language for all calculations. An implementation of all discussed methods is available in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 \end{abstract}
 
 
@@ -132,11 +133,11 @@ where we set the hopping amplitude to $t=-1$ and the chemical potential to $\mu=
 %\end{array}
 %\right].
 %\end{align}
-Generally, we are interested in the equal time Green's function $G$, Eq.~\eqref{etgf}, as an observable and it's determinant, which enters into the probability weight in Eq.~$\eqref{eq:DQMC}$. Let's make the latter point a bit more precise. In a Metropolis scheme it is actually the ratio of determinants,
+Generally, we are interested in the equal time Green's function $G$, Eq.~\eqref{etgf}, as an observable and it's determinant, which enters into the probability weight in Eq.~$\eqref{eq:DQMC}$. Let's make the latter point a bit more precise. In a Metropolis scheme,
 \begin{align}
-\dfrac{\det G'^{-1}}{\det G^{-1}} = \dfrac{\det G}{\det G'},
+p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis}
 \end{align}
-which determines the acceptance or rejection of a proposed (primed $G$) Markov walker step.
+it is actually the ratio of determinants which determines the acceptance or rejection of a proposed (primed $G$) Markov walker step.
 
 We will showcase the issue of numerical instabilities arising in the computation of $G$ by discussing the accuracy of the calculation of the building block of $G$, the slice matrix product chain
 \begin{align}
@@ -164,40 +165,41 @@ Neglecting the contribution by the chemical potential for simplicity, the energy
 
 One way to solve all problems is to switch to arbitrary precision numerics. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (very) slow performance since, among other things, \texttt{BigFloat} lacks hardware support. Arbitrary precision numerics is still a valuable tool and we will use it to benchmark the accuracy of stabilization methods below.
 
-How can we remedy the numerical issue outlined above in a floating point precision computation? The idea is to keep different scales separated throughout the computation as long as possible and only mix them in the final step if necessary. A way to realize this is by deploying matrix decompositions, which we write generally as
+How can we remedy the numerical issue outlined above in a floating point precision computation? The idea is to keep different scales separated throughout the computation as long as possible and only mix them in the final step, if necessary. A way to realize this is by deploying matrix decompositions, which we write generally as
 \begin{align}
 	B = UDX.
 \end{align}
-Here, $U$ and $X$ are matrices of scale $\sim 1$ and $D$ is a real diagonal matrix containing all the different scales of $B$ on the diagonal. We will refer to the values in $D$ as singular values independent of the particular decomposition.
+Here, $U$ and $X$ are matrices containing scales of the order of unity and $D$ is a real diagonal matrix having all the scales of $B$ separated on the diagonal. We will refer to the values in $D$ as singular values for all particular decompositions.
 
-Instead of calculating the matrix product $B_2 B_1$, we compute
+Instead of calculating the matrix product $B_2 B_1$ directly, we safely compute (\texttt{mult\_stable} in \texttt{StableDQMC.jl})
 
 \begin{align}
 B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
 &= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\
 &= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\eqref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.}
+with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\eqref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.} \textcolor{red}{TODO: Mention safe mult}
 
-Using this result, we have to be careful to separate scales in the equal-time Green's function calculation, Eq.~\ref{etgf}, as well. A straightforward procedure to add the unit matrix and perform the inversion in a stabilized manner is given by
+Using this scheme, we have to be careful to keep different scales separated in the equal-time Green's function calculation, Eq.~\ref{etgf}, as well. A straightforward procedure (\texttt{inv\_one\_plus\_udx} in \texttt{StableDQMC.jl}) to add the unit matrix and perform the inversion in a stabilized manner is given by\cite{Santos2003, Assaad2002a}
 
 \begin{align}
-[\mathbb{1} + UDX]^{-1} &= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \nonumber\\
-&= [(Uu)d(xX)]^{-1} \label{eq:inversion}\\
-&= (xX)^{-1} d (Uu)^{-1}\nonumber\\
-&= U_r D_r X_r \nonumber,
+	G &= [\mathbb{1} + UDX]^{-1} \nonumber \\
+	&= [U\underbrace{(U^\dagger X^{-1} + D)}_{udx}X]^{-1} \nonumber\\
+	&= [(Uu)d(xX)]^{-1} \label{eq:inversion}\\
+	&= U_r D_r X_r \nonumber,
 \end{align}
-with $U_r = (xX)^{-1}$, $D_r = d$, $X_r = (Uu)^{-1}$.
+with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 
-Another prescription\cite{Loh2005, Loh1989}, trying to take even more care of scale mixing, is
+Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_udx\_loh} in \texttt{StableDQMC.jl}), trying to take even more care of scale mixing, is\cite{Loh2005, Loh1989}
 \begin{align}
-	[\mathbb{1} + UDX]^{-1} &= [(D_p^{-1} X^{-1} + U D_m) D_p X]^{-1} \nonumber \\
+	G &= [\mathbb{1} + UDX]^{-1} \nonumber\\
+	&= [(D_p^{-1} X^{-1} + U D_m) D_p X]^{-1} \nonumber \\
 	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{D_p^{-1} X^{-1} + UD_m}_{udx})^{-1}]}_{udx} \label{eq:inversion_loh} \\
 	&= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. Here, we initially separate the scales in $D$ as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions to stabilize the inversion and recombination. We will see below that it is sometimes necessary to rely on this second procedure to obtain accurate results for $G$.\\
+with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. Here, we initially separate the scales in $D$ as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions to stabilize the inversion and recombination. We will demonstrate below that it is sometimes necessary to rely on this second procedure to obtain accurate results for $G$.\\
 
-So far we haven't specified the concrete decomposition $B = UDX$. In fact, there are a couple of choices. We will consider presumably most popular ones below.
+So far we haven't specified a concrete decomposition $B = UDX$. In fact, there are a couple of choices, two of which we will focus on in what follows.
 
 \subsection{SVD ($UDV^\dagger$)}
 A SVD is given by
@@ -212,14 +214,14 @@ Julia offers a couple of purely-Julia SVD implementations, like \href{https://gi
 	\item \texttt{gesvd}: Simple
 	\item \texttt{gesvj}: Jacobi algorithm (through \href{https://github.com/RalphAS/JacobiSVD.jl}{JacobiSVD.jl})
 \end{itemize}
-We will compare all of them below.
+which can be readily accessed via convenience wrappers of the same name exported by \texttt{StableDQMC.jl}. We will compare all of them below.
 
 \subsection{QR ($UDT$)}
 A QR decomposition reads
 \begin{align}
 B = QR = UDT,
 \end{align}
-where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular.
+where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}. The splitting into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in in \texttt{StableDQMC.jl}.
 
 \section{Benchmarks}
 
@@ -232,35 +234,32 @@ In the following we want to assess how the mentioned matrix decompositions perfo
 	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values seem to lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$). \label{fig:decomp_comparison_simple}}
 \end{figure}
 
-Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain Eq.~\ref{eq:Bchain} stabilized with different matrix decompositions as a function of it's length $M$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.
-
-\textcolor{red}{LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'}\\
+Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain Eq.~\ref{eq:Bchain} stabilized with different matrix decompositions as a function of it's length $M$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.\footnote{\textcolor{red}{LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'}}\\
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_regularinv.pdf}
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme from Eq.~\eqref{eq:inversion}. \label{fig:greens_accuracy_regularinv}}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus\_udx}, Eq.~\eqref{eq:inversion}. \label{fig:greens_accuracy_regularinv}}
 \end{figure}
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_loh.pdf}
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:greens_accuracy_loh}}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme \texttt{inv\_one\_plus\_udx\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:greens_accuracy_loh}}
 \end{figure}
 
-Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme in Eq.~\ref{eq:inversion} are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity. This suggests that only the QR decomposition, independent of the inversion procedure, and the Jacobi SVD in combination with Eq.~\ref{eq:inversion_loh} are suited for computing the equal time Green's function reliably.
-
-
-\begin{figure}[b]
+Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus\_udx}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_udx\_loh}, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity.
+\begin{figure}
 	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_regularinv.pdf}
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme from Eq.~\eqref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus\_udx}, Eq.~\ref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
 \end{figure}
 
-\begin{figure}[b]
+\begin{figure}
 	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_loh.pdf}
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme, Eq.~\textcolor{red}{TODO Scalettar}. \label{fig:det_accuracy_loh}}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and \texttt{inv\_one\_plus\_udx\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:det_accuracy_loh}}
 \end{figure}
 
-In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_loh} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance, obtained for all combinations of matrix decompositions and inversion schemes. Similar to the results of the last paragraph, only the QR decomposition leads to accurate results for all accessed temperatures, irrespective the employed inversion scheme, whereas all SVD methods show large relative errors. Interestingly, using the Jacobi SVD and Eq.~\ref{eq:inversion_loh} for the inversion doesn't remedy the numerical issues for the Green's function determinant. We also note that the latter inversion scheme does generally lead to more imprecise results than the simpler one in Eq.~\ref{eq:inversion}.
+In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_loh} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance\footnote{For local updates on can generally avoid full calculations of Green's function determinants by exploiting locality and performing a Laplace expansion since only ratios of determinants appear in Eq.~\ref{eq:metropolis}. In fact, in an optimal implementation the computation of the acceptance rate is $O(1)$ rather than $O(N^3)$.}, obtained for all combinations of matrix decompositions and inversion schemes. Similar to the results of the last paragraph, only the QR decomposition leads to accurate results for all accessed temperatures, irrespective of the employed inversion scheme. All SVD based methods show large relative deviations when combined with \texttt{inv\_one\_plus\_udx}. Switching to \texttt{inv\_one\_plus\_udx\_loh} does improve the determinant accuracy for the Jacobi SVD but not for the other SVD implementations.
 
+These findings suggest that only the QR decomposition, independent of the inversion procedure, or the Jacobi SVD in combination with the more careful inversion scheme \texttt{inv\_one\_plus\_udx\_loh} is suited for computing the equal time Green's function and it's determinant reliably.
 
 %\begin{table}[b]
 %	\bgroup
@@ -332,11 +331,52 @@ In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_loh} we show t
 \subsection{Efficiency}
 
 
-\clearpage
-\section{The time-displaced Green's function}
-Scalettar and other's method \cite{Loh2005}
+
+%\afterpage{\clearpage}
+\section{Time-displaced Green's function}
+\citet{Loh2005} method
 Hirsch method\cite{Hirsch1988}
 
+We generalize our definition of the equal times Green's function, Eq.~\ref{etgf}, to include the imaginary time $\tau = l \Delta \tau$ dependence,
+\begin{align}
+G(\tau) = \langle c_{i} c_{j}^\dagger \rangle_{\phi_l} = \left( 1 + B_{l-1}\dots B_1 B_M \dots B_l \right)^{-1}.
+\end{align}
+Note that $ G \equiv G_1 = G_{M+1} = \left( 1 + B_M \dots B_l \right)^{-1} $. The time displaced Green's function can now be defined as\cite{Santos2003, Assaad2002a}
+\begin{align*}
+	G_{l_1,l_2} &\equiv G(\tau_1, \tau_2) \equiv \langle T c_i(\tau_1) c_j^\dagger(\tau_2) \rangle_\varphi,
+\end{align*}
+where $T$ represents time ordering.
+
+More explicitly this reads
+\begin{align}
+	G(\tau_1, \tau_2) = \begin{cases}
+	B_{l_1} \cdots B_{l_2 + 1} G_{l_2 + 1}, &\tau_1 > \tau_2,\\
+	- \left( 1 - G_{l_1 + 1} \right) \left( B_{l_2} \cdots B_{l_1 + 1}\right)^{-1}, &\tau_2 > \tau_1.
+	\end{cases} \label{eq:tdgf_propagate}
+\end{align}
+In principle, this gives us a prescription for how to calculate $G(\tau_1, \tau_2)$ from the equal time Green's function $G(\tau)$ (which we know how to stabilize). However, when $|\tau_1 - \tau_2|$ is large a naive calculation of slice matrix product chains in Eq.~\ref{eq:tdgf_propagate} would be numerically unstable, as seen above. Also, by first calculating $G$ we already mix important scale information in the last recombination step, in which we multiply $G = UDX$. We therefore rather compute the time-displaced Green's function directly as
+\begin{align}
+	G(\tau_1, \tau_2) = (U_L D_L X_L + U_R D_R X_R)^{-1}.
+\end{align}
+Similar to Sec.~\ref{sec:stabilization}, we must be very careful to keep the involved scales separated as much as possible when performing the summation and the inversion.
+As a first explicit procedure, we consider a simple generalization of Eq.~\ref{eq:inversion} (\texttt{inv\_sum\_udxs} in \texttt{StableDQMC.jl}),
+\begin{align}
+	G(\tau_1, \tau_2) &= [U_L D_L X_L + U_R D_R X_R]^{-1} \nonumber\\
+	&= [U_L \underbrace{(D_L X_L X_R^{-1} + U_L^\dagger U_R D_R)}_{udx} X_R ]^{-1} \nonumber\\
+	&= [(U_L u) d^{-1} (x X_R)]^{-1} \\
+	&= U_r D_r X_r, 
+\end{align}
+where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
+
+Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scales in $D$, is as follows,
+\begin{align}
+	G(\tau_1, \tau_2) &= [U_L D_L X_L + U_R D_R X_R]^{-1} \nonumber\\
+	&= [U_L D_{Lm} D_{Lp} X_L + U_R D_{Rm} D_{Rp} X_R]^{-1} \nonumber\\
+	&= \left[U_L D_{Lp} \underbrace{\left( \dfrac{D_{Lm}}{D_{Rp}} X_L X_R^{-1} + U_L^\dagger U_R \dfrac{D_{Rm}}{D_{Lp}} \right)}_{udx} X_R D_{Rp} \right]^{-1} \nonumber\\
+	&= X_R^{-1} \underbrace{\dfrac{1}{D_{Rp}} [udx]^{-1} \dfrac{1}{D_{Lp}}}_{udx} U_L^\dagger \\
+	&= U_r D_r X_r,
+\end{align}
+with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
 
 

@@ -23,7 +23,7 @@ udv(A::AbstractMatrix{T}) where T<:Number = udv!(copy(A))
 #
 ##############################################################
 # multiplies two UDVds -> UDVd
-function multiply_safely_udv(Ul,Dl,Vdl,Ur,Dr,Vdr)
+function mult_stable_udv(Ul,Dl,Vdl,Ur,Dr,Vdr)
   tmp = adjoint(Vdl) * Ur
   rmul!(tmp, Diagonal(Dr))
   lmul!(Diagonal(Dl), tmp)

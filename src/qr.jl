@@ -34,7 +34,7 @@ end
 """
 Safely multiply two UDT decompositions
 """
-function multiply_safely(Ul,Dl,Tl, Ur,Dr,Tr)
+function mult_stable(Ul,Dl,Tl, Ur,Dr,Tr)
   mat = Tl * Ur
   lmul!(Diagonal(Dl), mat)
   rmul!(mat, Diagonal(Dr))

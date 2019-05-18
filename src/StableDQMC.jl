@@ -17,7 +17,7 @@ export calc_product_chain_stabilized
 # QR / UDT
 export udt!
 export udt
-export multiply_safely
+export mult_stable
 export UDT_to_mat!
 export UDT_to_mat
 
@@ -49,7 +49,7 @@ export udv!
 export udv
 export UDV_to_mat!
 export UDV_to_mat
-export multiply_safely_udv
+export mult_stable_udv
 
 export inv_udv!
 export inv_udv
