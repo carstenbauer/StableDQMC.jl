@@ -12,8 +12,8 @@ genericsvd! = x -> (F = svd!(x); return (F.U, F.S, F.Vt))
 genericsvd = x -> genericsvd!(copy(x))
 
 
-decompose_udv!(A::AbstractMatrix{<:Number}) = gesvd!(A)
-decompose_udv(A::AbstractMatrix{T}) where T<:Number = decompose_udv!(copy(A))
+udv!(A::AbstractMatrix{<:Number}) = gesvd!(A)
+udv(A::AbstractMatrix{T}) where T<:Number = udv!(copy(A))
 
 
 
@@ -27,7 +27,7 @@ function multiply_safely_udv(Ul,Dl,Vdl,Ur,Dr,Vdr)
   tmp = adjoint(Vdl) * Ur
   rmul!(tmp, Diagonal(Dr))
   lmul!(Diagonal(Dl), tmp)
-  U, D, Vd = decompose_udv!(tmp)
+  U, D, Vd = udv!(tmp)
   U = Ul * U
   Vd = Vd * Vdr
   return U, D, Vd
@@ -62,7 +62,7 @@ end
 function inv_one_plus_udv(U,D,Vd)
   inner = copy(Vd')
   inner .+= U * Diagonal(D)
-  I = decompose_udv!(inner)
+  I = udv!(inner)
   u = copy(adjoint(I[3] * Vd))
   d = 1 ./ I[2]
   vd = adjoint(I[1])
@@ -76,7 +76,7 @@ end
 function inv_one_plus_udv_alt(U,D,Vd)
   inner = copy((Vd*U)')
   inner[diagind(inner)] .+= D
-  u, d, vd = decompose_udv!(inner)
+  u, d, vd = udv!(inner)
 
   t1 = adjoint(vd*Vd)
   t2 = adjoint(U*u)
@@ -97,11 +97,11 @@ function inv_one_plus_udv_loh(U,D,Vd)
   r = copy(U)
   rmul!(r, Diagonal(Dm))
 
-  u, d, vd = decompose_udv!(l+r)
+  u, d, vd = udv!(l+r)
 
   m = inv_udv(u,d,vd)
   lmul!(Diagonal(Dpinv), m)
-  u, d, vd = decompose_udv!(m)
+  u, d, vd = udv!(m)
 
   mul!(m, Vd', u)
   # return m, d, vd
@@ -131,11 +131,11 @@ function inv_one_plus_udv_loh!(mc, res, U,D,Vd)
   rmul!(l, Diagonal(Dp))
   rmul!(r, Diagonal(Dm))
 
-  u, d, vd = decompose_udv!(l + r)
+  u, d, vd = udv!(l + r)
 
   m = inv_udv(u,d,vd) # TODO: optimize
   lmul!(Diagonal(Dp), m)
-  u, d, vd = decompose_udv!(m)
+  u, d, vd = udv!(m)
 
   mul!(m, Vd', u)
   # return m, d, vd
@@ -198,7 +198,7 @@ function inv_sum_udvs(Ua, Da, Vda, Ub, Db, Vdb)
     
     mat1 = mat1 + mat2
     
-    U, D, Vd = decompose_udv!(mat1)
+    U, D, Vd = udv!(mat1)
 
     UDV_to_mat!(mat1, U, D, Vd, invert=true)
 
@@ -206,7 +206,7 @@ function inv_sum_udvs(Ua, Da, Vda, Ub, Db, Vdb)
         mat1[j,k]=mat1[j,k] / Dbp[j] / Dap[k]
     end
 
-    U, D, Vd = decompose_udv!(mat1)
+    U, D, Vd = udv!(mat1)
 
     mul!(mat1, Vdb', U)
     mul!(mat2, Vd, Ua')
@@ -241,14 +241,14 @@ function inv_sum_udvs!(mc, res, Ua, Da, Vda, Ub, Db, Vdb)
     
     mat1 = mat1 + mat2
     
-    U, D, Vd = decompose_udv!(mat1)
+    U, D, Vd = udv!(mat1)
     UDV_to_mat!(mat1, U, D, Vd, invert=true)
 
     for j in 1:d, k in 1:d
         mat1[j,k]=mat1[j,k] / Dbp[j] / Dap[k]
     end
 
-    U, D, Vd = decompose_udv!(mat1)
+    U, D, Vd = udv!(mat1)
 
     mul!(mat1,adjoint(Vdb),U)
     mul!(mat2,Vd,adjoint(Ua))

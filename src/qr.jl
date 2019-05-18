@@ -1,4 +1,4 @@
-function decompose_udt(A::AbstractMatrix{C}) where C<:Number
+function udt(A::AbstractMatrix{C}) where C<:Number
   F = qr(A, Val(true))
   p = F.p
   @views p[p] = collect(1:length(p))
@@ -7,7 +7,7 @@ function decompose_udt(A::AbstractMatrix{C}) where C<:Number
   return Matrix(F.Q), D, T
 end
 
-function decompose_udt!(A::AbstractMatrix{C}, D) where C<:Number
+function udt!(A::AbstractMatrix{C}, D) where C<:Number
   n = length(D)
   F = qr!(A, Val(true))
   R = F.R # F.R is of regular matrix type
@@ -38,7 +38,7 @@ function multiply_safely(Ul,Dl,Tl, Ur,Dr,Tr)
   mat = Tl * Ur
   lmul!(Diagonal(Dl), mat)
   rmul!(mat, Diagonal(Dr))
-  U, D, T = decompose_udt(mat)
+  U, D, T = udt(mat)
   return Ul*U, D, T*Tr
 end
 
@@ -99,7 +99,7 @@ function inv_one_plus_udt(U,D,T)
 
   m = U' / T
   m[diagind(m)] .+= D
-  u,d,t = decompose_udt(m)
+  u,d,t = udt(m)
   u = U * u
   t = t * T
   ldiv!(m, lu!(t), Diagonal(1 ./ d))
@@ -138,7 +138,7 @@ function inv_one_plus_udt!(mc, res, U,D,T)
   m = U' / T
   m[diagind(m)] .+= D
 
-  utmp,ttmp = decompose_udt!(m, d)
+  utmp,ttmp = udt!(m, d)
   mul!(u, U, utmp)
   mul!(t, ttmp, T)
     
@@ -179,7 +179,7 @@ function inv_one_plus_two_udts!(mc, U,D,T, Ul,Dl,Tl, Ur,Dr,Tr)
   mul!(tmp, Tl, adjoint(Tr))
   rmul!(tmp, Diagonal(Dr))
   lmul!(Diagonal(Dl), tmp)
-  U1, T1 = decompose_udt!(tmp, s.D)
+  U1, T1 = udt!(tmp, s.D)
 
   mul!(tmp3, Ul, U1)
   mul!(tmp2, T1, adjoint(Ur))
@@ -187,7 +187,7 @@ function inv_one_plus_two_udts!(mc, U,D,T, Ul,Dl,Tl, Ur,Dr,Tr)
 
   tmp .+= Diagonal(s.D)
 
-  u, t = decompose_udt!(tmp, D)
+  u, t = udt!(tmp, D)
 
   mul!(tmp, t, tmp2)
   copyto!(U, inv(tmp))
@@ -259,13 +259,13 @@ function inv_one_plus_udt_loh!(mc, res, U,D,T)
   mul!(r, U, Diagonal(Dm))
   r .+= l
 
-  u, t = decompose_udt!(r, d)
+  u, t = udt!(r, d)
 
   ldiv!(r, lu!(t), Diagonal(1 ./ d))
   mul!(l, r, u')
 
   lmul!(Diagonal(Dpinv), l)
-  u, t = decompose_udt!(l, d)
+  u, t = udt!(l, d)
 
   ldiv!(l, lu(T), u)
 
@@ -303,7 +303,7 @@ function inv_sum_udts(Ua,Da,Ta,Ub,Db,Tb)
   m2 = Ua' * Ub
   rmul!(m2, Diagonal(Db))
 
-  u,d,t = decompose_udt(m1 + m2)
+  u,d,t = udt(m1 + m2)
 
   mul!(m1, Ua, u)
   mul!(m2, t, Tb)
@@ -345,7 +345,7 @@ function inv_sum_udts!(mc, res, Ua,Da,Ta,Ub,Db,Tb)
   mul!(m2, Ua', Ub)
   rmul!(m2, Diagonal(Db))
 
-  u,t = decompose_udt!(m1 + m2, d)
+  u,t = udt!(m1 + m2, d)
 
   mul!(m1, Ua, u)
   mul!(m2, t, Tb)
@@ -402,7 +402,7 @@ function inv_sum_udts_loh(Ua, Da, Ta, Ub, Db, Tb)
     mat1 = mat1 + mat2
     
     # decompose mat1: U, D, T
-    U, D, T = decompose_udt(mat1)
+    U, D, T = udt(mat1)
 
     # invert inner part: mat1 = (U D T)^(-1) = mat1^(-1)
     # was UDT_to_mat!(mat1, U, D, T, invert=true)
@@ -415,7 +415,7 @@ function inv_sum_udts_loh(Ua, Da, Ta, Ub, Db, Tb)
     end
 
     #mat1 = U D T
-    U, D, T = decompose_udt(mat1)
+    U, D, T = udt(mat1)
 
     # U = Tb^(-1) * U , T = T * Ua'
     mul!(mat1, inv(Tb), U)
@@ -476,7 +476,7 @@ function inv_sum_udts_loh!(mc, res, Ua, Da, Ta, Ub, Db, Tb)
     mat1 .+= mat2
     
     # decompose mat1: U, D, T
-    U, T = decompose_udt!(mat1, D)
+    U, T = udt!(mat1, D)
 
     # invert and combine inner part: mat1 = (U D T)^(-1)
     lmul!(Diagonal(D), T)
@@ -488,7 +488,7 @@ function inv_sum_udts_loh!(mc, res, Ua, Da, Ta, Ub, Db, Tb)
     end
 
     #mat1 = U D T
-    U, T = decompose_udt!(mat1, D)
+    U, T = udt!(mat1, D)
 
     # U = Tb^(-1) * U , T = T * Ua'
     ldiv!(mat1, lu!(Tb), U) # mat1 = Tb \ U

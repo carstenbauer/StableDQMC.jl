@@ -15,8 +15,8 @@ export calc_product_chain_stabilized
 
 
 # QR / UDT
-export decompose_udt!
-export decompose_udt
+export udt!
+export udt
 export multiply_safely
 export UDT_to_mat!
 export UDT_to_mat
@@ -45,8 +45,8 @@ export genericsvd
 export gesvj!
 export gesvj
 
-export decompose_udv!
-export decompose_udv
+export udv!
+export udv
 export UDV_to_mat!
 export UDV_to_mat
 export multiply_safely_udv
