@@ -2,8 +2,10 @@ module StableDQMC
 
 using SparseArrays, LinearAlgebra
 using GenericSVD, JacobiSVD
+using Parameters
 
 include("linalg.jl")
+include("udt_type.jl")
 include("qr.jl")
 include("svd.jl")
 include("Bchain.jl")

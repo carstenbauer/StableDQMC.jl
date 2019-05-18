@@ -1,151 +1,57 @@
-function udt(A::AbstractMatrix{C}) where C<:Number
-  F = qr(A, Val(true))
-  p = F.p
-  @views p[p] = collect(1:length(p))
-  D = abs.(real(diag(F.R)))
-  T = (Diagonal(1 ./ D) * F.R)[:, p]
-  return Matrix(F.Q), D, T
-end
-
-function udt!(A::AbstractMatrix{C}, D) where C<:Number
-  n = length(D)
-  F = qr!(A, Val(true))
-  R = F.R # F.R is of regular matrix type
-
-  @views F.p[F.p] = 1:n
-
-  @inbounds for i in 1:n
-    D[i] = abs(real(R[i,i]))
-  end
-
-  lmul!(Diagonal(1 ./ D), R)
-
-  return Matrix(F.Q), R[:, F.p] # Q, (D is modified in-place), T
-end
-
-
-
-
 ##############################################################
 #
 #                   QR / UDT
 #
 ##############################################################
 """
-Safely multiply two UDT decompositions
-"""
-function mult_stable(Ul,Dl,Tl, Ur,Dr,Tr)
-  mat = Tl * Ur
-  lmul!(Diagonal(Dl), mat)
-  rmul!(mat, Diagonal(Dr))
-  U, D, T = udt(mat)
-  return Ul*U, D, T*Tr
-end
 
+    inv_one_plus(F::UDT) -> AbstractMatrix
 
-
-
-
-
-
-
-"""
-
-  inv_udt(U, D, T) -> result
-
-Calculate (UDT)^(-1).
-"""
-function inv_udt(U,D,T)
-  res = similar(U)
-  inv_udt!(res, U, D, T)
-  res
-end
-
-"""
-
-  inv_udt!(res, U, D, T) -> nothing
-
-Calculate (UDT)^(-1) and store result in `res`
-"""
-function inv_udt!(res, U,D,T)
-  tmp = similar(U)
-  ldiv!(tmp, lu(T), Diagonal(1 ./ D))
-  mul!(res, tmp, U')
-  nothing
-end
-
-
-
-
-
-
-
-
-
-"""
-
-  inv_one_plus_udt(U, D, T) -> result
-
-Stable calculation of [1 + UDT]^(-1):
+Stable calculation of `[1 + UDT]^(-1)`:
 
   * Use one intermediate UDT decomposition.
 
-Faster but less accurate than the loh approach.
+Faster but potentially less accurate than `inv_one_plus_loh`.
 
-Consider `inv_one_plus_udt!` as an efficient (not one-to-one) replacement.
+Optional preallocations possible via keyword arguments:
+
+  * `d = similar(F.D)`
+  * `u = similar(F.U)`
+  * `t = similar(F.T)`
 """
-function inv_one_plus_udt(U,D,T)
-  @warn "Calling somewhat inefficient and potentially inaccurate `inv_one_plus_udt`"
-
-  m = U' / T
-  m[diagind(m)] .+= D
-  u,d,t = udt(m)
-  u = U * u
-  t = t * T
-  ldiv!(m, lu!(t), Diagonal(1 ./ d))
-  m * u'
+function inv_one_plus(F::UDT; kwargs...)
+  res = similar(F.U)
+  inv_one_plus!(res, F; kwargs...)
+  return res
 end
 
 
 
 
-
-
-
-
-
-
-
 """
 
-  inv_one_plus_udt!(mc, res, U, D, T) -> nothing
+  inv_one_plus!(res, F::UDT) -> res
 
-Stable calculation of [1 + UDT]^(-1):
-
-  * Use one intermediate UDT decomposition.
-
-Uses preallocated memory in `mc`. Writes the result into `res`.
-
-Much faster (~50%) than `inv_one_plus_udt_loh!` but less accurate.
+Same as `inv_one_plus` but stores the result in preallocated `res`.
 """
-function inv_one_plus_udt!(mc, res, U,D,T)
-  @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
-
-  d = mc.s.d
-  u = mc.s.tmp
-  t = mc.s.tmp2
+function inv_one_plus!(res, F::UDT; u = similar(F.U), d = similar(F.D), t = similar(F.T))
+  # @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
+  # d = mc.s.d
+  # u = mc.s.tmp
+  # t = mc.s.tmp2
+  U, D, T = F
 
   m = U' / T
   m[diagind(m)] .+= D
 
-  utmp,ttmp = udt!(m, d)
+  utmp, d, ttmp = udt!(m)
   mul!(u, U, utmp)
   mul!(t, ttmp, T)
     
   ldiv!(m, lu!(t), Diagonal(1 ./ d))
     
   mul!(res, m, u')
-  nothing
+  res
 end
 
 
@@ -157,65 +63,78 @@ end
 
 
 
-
-
-
-
-
 """
 
-  inv_one_plus_two_udts!(mc, U, D, T, Ul, Dl, Tl, Ur, Dr, Tr) -> nothing
+    udt_inv_one_plus(A::UDT, Bdagger::UDT) -> UDT
 
-Stable calculation of [1 + UlDlTl(UrDrTr)^†]^(-1).
+Stable calculation of [1 + UlDlTl(UrDrTr)^†]^(-1). Returns and
+`UDT` factorization object.
 
-Uses preallocated memory in `mc`. Writes the result into `U`, `D`, and `T`.
+Optional preallocations via keyword arguments:
+
+  * tmp = similar(A.U)
+  * tmp2 = similar(A.U)
+  * tmp3 = similar(A.U)
 """
-function inv_one_plus_two_udts!(mc, U,D,T, Ul,Dl,Tl, Ur,Dr,Tr)
-  s = mc.s
-  tmp = mc.s.tmp
-  tmp2 = mc.s.tmp2
-  tmp3 = mc.s.curr_U
+function udt_inv_one_plus(A::UDT, Bdagger::UDT; tmp = similar(A.U), tmp2 = similar(A.U), tmp3 = similar(A.U))
+  # s = mc.s
+  # tmp = mc.s.tmp
+  # tmp2 = mc.s.tmp2
+  # tmp3 = mc.s.curr_U
+  Ul,Dl,Tl = A
+  Ur,Dr,Tr = Bdagger
 
   mul!(tmp, Tl, adjoint(Tr))
   rmul!(tmp, Diagonal(Dr))
   lmul!(Diagonal(Dl), tmp)
-  U1, T1 = udt!(tmp, s.D)
+  U1, D1, T1 = udt!(tmp)
 
   mul!(tmp3, Ul, U1)
   mul!(tmp2, T1, adjoint(Ur))
   mul!(tmp, adjoint(tmp3), inv(tmp2))
 
-  tmp .+= Diagonal(s.D)
+  tmp .+= Diagonal(D1)
 
-  u, t = udt!(tmp, D)
-
+  u, d, t = udt!(tmp)
   mul!(tmp, t, tmp2)
-  copyto!(U, inv(tmp))
+  mul!(tmp2, tmp3, u)
 
-  mul!(tmp, tmp3, u)
-  copyto!(T, adjoint(tmp))
-
-  D .= 1 ./ D
-
-  nothing
+  UDT(inv(tmp), 1 ./ d, tmp2')
 end
+
 
 
 
 
 """
 
-  inv_one_plus_two_udts!(mc, res, Ul, Dl, Tl, Ur, Dr, Tr) -> nothing
+  inv_one_plus!(res, A::UDT, Bdagger::UDT) -> res
+
+Stable calculation of [1 + UlDlTl(UrDrTr)^†]^(-1).
+Writes the result into `res`.
+
+See `udt_inv_one_plus` for preallocation options.
+"""
+function inv_one_plus!(res, A::UDT, Bdagger::UDT; kwargs...)
+  F = udt_inv_one_plus(A, Bdagger; kwargs...)
+  rmul!(F.U, Diagonal(F.D))
+  mul!(res, F.U, F.T)
+  res
+end
+
+
+"""
+
+  inv_one_plus(A::UDT, Bdagger::UDT) -> AbstractMatrix
 
 Stable calculation of [1 + UlDlTl(UrDrTr)^†]^(-1).
 
-Uses preallocated memory in `mc`. Writes the result into `res`.
+See `udt_inv_one_plus` for preallocation options.
 """
-function inv_one_plus_two_udts!(mc, res, Ul,Dl,Tl, Ur,Dr,Tr)
-  inv_one_plus_two_udts!(mc, s.U, s.d, s.T, Ul, Dl, Tl, Ur, Dr, Tr)
-  rmul!(s.U, Diagonal(s.d))
-  mul!(res, s.U, s.T)
-  nothing
+function inv_one_plus(A::UDT, Bdagger::UDT; kwargs...)
+  res = similar(A.U)
+  inv_one_plus!(res, A, Bdagger; kwargs...)
+  return res
 end
 
 
@@ -223,10 +142,7 @@ end
 
 
 
-
-
-
-
+################################################# Stopped here
 
 
 
@@ -500,50 +416,4 @@ function inv_sum_udts_loh!(mc, res, Ua, Da, Ta, Ub, Db, Tb)
     rmul!(U, Diagonal(D))
     mul!(res, U, T)
     nothing
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-  UDT_to_mat!(mat, U, D, T[; invert=false]) -> nothing
-
-Combine given UDT to a matrix. Result will be stored in `mat`.
-
-If `invert = true` (UDT)^(-1) is calculated.
-
-Note that if parts of the input UDT may be overwritten it's
-more efficient to inline this function and remove unnecessary copies!
-"""
-function UDT_to_mat!(mat, U, D, T; invert=false) 
-    # TODO: Check where this is called and inline manually for better speed. (remove copy())
-    @warn "UDT_to_mat! probably shouldn't be called here" # TODO remove once checked
-    if !invert
-        mat1 = copy(U)
-        rmul!(mat1, Diagonal(D))
-        mul!(mat,mat1,T)
-    else # (DT)^-1 * U^dagger
-        mat1 = copy(T)
-        lmul!(Diagonal(D), mat1)
-        mat .= mat1 \ U'
-    end
-    nothing
-end
-
-function UDT_to_mat(U, D, T; kw...)
-  res = copy(U)
-  UDT_to_mat!(res, U, D, T; kw...)
-  res
 end
