@@ -22,6 +22,11 @@ Base.AbstractArray(F::UDT) = AbstractMatrix(F)
 Base.Matrix(F::UDT) = Array(AbstractArray(F))
 Base.Array(F::UDT) = Matrix(F)
 
+function Matrix!(res::AbstractMatrix, F::UDT)
+    tmp = F.U * Diagonal(F.D)
+    mul!(res, tmp, F.T)
+end
+
 
 # iteration for destructuring into components
 Base.iterate(S::UDT) = (S.U, Val(:D))

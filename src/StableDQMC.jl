@@ -17,23 +17,22 @@ export calc_product_chain_stabilized
 
 
 # QR / UDT
-export udt!
-export udt
-export mult_stable
-export UDT_to_mat!
-export UDT_to_mat
+export UDT, inv!, udt_mult, Matrix!
+export udt!, udt
 
+export inv_one_plus!
+export inv_one_plus
+export udt_inv_one_plus
+export udt_inv_sum
+export inv_sum!
+export inv_sum
 
-export inv_udt!
-export inv_udt
-export inv_one_plus_udt!
-export inv_one_plus_udt
-export inv_one_plus_two_udts!
-export inv_sum_udts!
-export inv_sum_udts
-export inv_sum_udts_loh!
-export inv_sum_udts_loh
-export inv_one_plus_udt_loh!
+export udt_inv_one_plus_loh
+export inv_one_plus_loh!
+export inv_one_plus_loh
+export udt_inv_sum_loh
+export inv_sum_loh!
+export inv_sum_loh
 
 
 
