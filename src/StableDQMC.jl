@@ -48,9 +48,8 @@ export gesvj
 
 export udv!
 export udv
-export UDV_to_mat!
-export UDV_to_mat
-export mult_stable_udv
+
+export svd_mult
 
 export inv_udv!
 export inv_udv

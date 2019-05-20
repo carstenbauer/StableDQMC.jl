@@ -190,14 +190,14 @@ Using this scheme, we have to be careful to keep different scales separated in t
 \end{align}
 with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 
-Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_udx\_loh} in \texttt{StableDQMC.jl}), trying to take even more care of scale mixing, is\cite{Loh2005, Loh1989}
+Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_udx\_loh} in \texttt{StableDQMC.jl}), where we initially separate the scales in as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions, is given by\cite{Loh2005, Loh1989}
 \begin{align}
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber\\
 	&= [(D_p^{-1} X^{-1} + U D_m) D_p X]^{-1} \nonumber \\
 	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{D_p^{-1} X^{-1} + UD_m}_{udx})^{-1}]}_{udx} \label{eq:inversion_loh} \\
 	&= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. Here, we initially separate the scales in $D$ as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions to stabilize the inversion and recombination. We will demonstrate below that it is sometimes necessary to rely on this second procedure to obtain accurate results for $G$.\\
+with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. We will demonstrate below that it is sometimes necessary to employ this second procedure to obtain accurate results for $G$.\\
 
 So far we haven't specified a concrete decomposition $B = UDX$. In fact, there are a couple of choices, two of which we will focus on in what follows.
 
@@ -208,10 +208,10 @@ A SVD is given by
 \end{align}
 where $U$ is unitary, $D$ is a real diagonal matrix, and $V^\dagger$ is unitary. In this case we can use the unitarity of $U$ and $V^\dagger$ to calculate inverse terms like, for example, $(Uu)^{-1}$ in the last line of \ref{eq:inversion} as $(Uu)^{-1} = u^\dagger U^\dagger$, which is generally cheaper.
 
-Julia offers a couple of purely-Julia SVD implementations, like \href{https://github.com/JuliaLinearAlgebra/GenericSVD.jl/}{GenericSVD.jl}, which we will use for \texttt{BigFloat} computations. However, some of the most optimized algorithms are part of LAPACK\cite{LAPACK} and Julia defaults to those algorithms for regular floating point types. Concretely, there are three SVD functions\footnote{Note that Fortran LAPACK functions are named according to realness and symmetries of the matrix. In Julia multiple-dispatch takes care of routing different matrix types to different \textit{methods}. The Julia function \texttt{gesdd} works for both real and complex matrices, i.e. there is no (need for) \texttt{cgesdd}.} implementing different algorithms:
+Julia offers a couple of purely-Julia SVD implementations, like \href{https://github.com/JuliaLinearAlgebra/GenericSVD.jl/}{GenericSVD.jl}, which we will use for \texttt{BigFloat} computations. However, some of the most optimized algorithms are part of LAPACK\cite{LAPACK} and Julia defaults to those algorithms for regular floating point types. Concretely, there are three SVD functions\footnote{Note that Fortran LAPACK functions are named according to realness and symmetries of the matrix. In Julia multiple-dispatch takes care of routing different matrix types to different \textit{methods}. The Julia function \texttt{gesdd} works for both real and complex matrices, i.e. there is no (need for) \texttt{cgesdd}.} implementing different algorithms for calculating the SVD:
 \begin{itemize}
 	\item \texttt{gesdd} (default): Divide-and-conquer (D\&C)
-	\item \texttt{gesvd}: Simple
+	\item \texttt{gesvd}: Conventional
 	\item \texttt{gesvj}: Jacobi algorithm (through \href{https://github.com/RalphAS/JacobiSVD.jl}{JacobiSVD.jl})
 \end{itemize}
 which can be readily accessed via convenience wrappers of the same name exported by \texttt{StableDQMC.jl}. We will compare all of them below.
@@ -225,7 +225,7 @@ where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. He
 
 \section{Benchmarks}
 
-In the following we want to assess how the mentioned matrix decompositions perform in stable computations of the slice matrix product chain $B_M \cdots B_1$, the Green's function $G$, and it's determinant $\det G$, both with respect to accuracy and speed, for our model system in Eq.~\ref{eq:model}.
+In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of the slice matrix product chain $B_M \cdots B_1$, the Green's function $G$, and it's determinant $\det G$, both with respect to accuracy and speed, for our model system in Eq.~\ref{eq:model}.
 
 \subsection{Accuracy}
 

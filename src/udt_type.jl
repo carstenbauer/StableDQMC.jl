@@ -103,18 +103,6 @@ end
 
 
 """
-    inv!(res, F::UDT) -> res
-
-Same as `inv` but writes result into preallocated `res`.
-"""
-function inv!(res::M, F::UDT{E, Er, M}) where {E,Er,M}
-    tmp = similar(F.U)
-    ldiv!(tmp, lu(F.T), Diagonal(1 ./ F.D))
-    mul!(res, tmp, F.U')
-    return res
-end
-
-"""
     udt_mult(A::UDT, B::UDT) -> UDT
 
 Stabilized multiplication of two `UDT` decompositions.

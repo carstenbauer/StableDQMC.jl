@@ -1,15 +1,59 @@
-gesdd! = x -> LinearAlgebra.LAPACK.gesdd!('A', x)
-gesdd = x -> gesdd!(copy(x))
+"""
+Calculates the SVD deomposition of a matrix by employing
+a divide and conquer approach.
+Returns a `SVD` factorization object.
+"""
+gesdd(x) = gesdd!(copy(x))
+"""
+Same as `gesdd` but saves space by overwriting the input matrix.
+"""
+function gesdd!(x)
+  u,s,vt = LinearAlgebra.LAPACK.gesdd!('A', x)
+  SVD(u,s,vt)
+end
 
-gesvd! = x -> LinearAlgebra.LAPACK.gesvd!('A', 'A', x)
-gesvd = x -> gesvd!(copy(x))
 
-# gesvj! = x -> JacobiSVD.gesvj!('G','U','V', x)
-gesvj! = x -> (F = JacobiSVD.jsvd!(x); return (F.U, F.S, F.Vt))
-gesvj = x -> gesvj!(copy(x))
+"""
+Calculates the SVD deomposition of a matrix.
+Returns a `SVD` factorization object.
+"""
+gesvd(x) = gesvd!(copy(x))
+"""
+Same as `gesvd` but saves space by overwriting the input matrix.
+"""
+function gesvd!(x)
+  u,s,vt = LinearAlgebra.LAPACK.gesvd!('A', 'A', x)
+  SVD(u,s,vt)
+end
 
-genericsvd! = x -> (F = svd!(x); return (F.U, F.S, F.Vt))
-genericsvd = x -> genericsvd!(copy(x))
+
+"""
+Calculates the SVD deomposition of a matrix by using the
+Jacobi method. Returns a `SVD` factorization object.
+"""
+gesvj(x) = gesvj!(copy(x))
+"""
+Same as `gesvj` but saves space by overwriting the input matrix.
+"""
+function gesvj!(x)
+  JacobiSVD.jsvd!(x)
+end
+
+
+"""
+Calculates the SVD deomposition of a matrix in a type generic manner.
+Can for example be used with a `Matrix{BigFloat}`.
+Returns a `SVD` factorization object.
+"""
+genericsvd(x) = genericsvd!(copy(x))
+"""
+Same as `genericsvd` but saves space by overwriting the input matrix.
+"""
+function genericsvd!(x)
+  GenericSVD.svd!(x)
+end
+
+
 
 
 udv!(A::AbstractMatrix{<:Number}) = gesvd!(A)
@@ -17,31 +61,48 @@ udv(A::AbstractMatrix{T}) where T<:Number = udv!(copy(A))
 
 
 
-##############################################################
-#
-#                   SVD / UDV(t)
-#
-##############################################################
-# multiplies two UDVds -> UDVd
-function mult_stable_udv(Ul,Dl,Vdl,Ur,Dr,Vdr)
-  tmp = adjoint(Vdl) * Ur
-  rmul!(tmp, Diagonal(Dr))
-  lmul!(Diagonal(Dl), tmp)
-  U, D, Vd = udv!(tmp)
-  U = Ul * U
-  Vd = Vd * Vdr
-  return U, D, Vd
+# extra operations for SVD factorizations
+"""
+    svd_mult(A::SVD, B::SVD) -> SVD
+
+Stabilized multiplication of two SVD decompositions.
+Returns a `SVD` factorization object.
+"""
+function svd_mult(A::SVD, B::SVD)
+    mat = A.Vt * B.U
+    lmul!(Diagonal(A.S), mat)
+    rmul!(mat, Diagonal(B.S))
+    F = udv!(mat)
+    SVD(A.U * F.U, F.S, F.Vt * B.Vt)
 end
 
 
-# Calculates (UDVd)^-1, where U, D, Vd come from SVD decomp.
-function inv_udv(U,D,Vd)
-  m = copy(Vd')
-  rmul!(m, Diagonal(1 ./ D))
-  res = similar(m)
-  mul!(res, m, U')
-  res
+"""
+    *(A::SVD, B::SVD)
+
+Stabilized multiplication of two SVD decompositions.
+
+(Type piracy if `LinearAlgebra` defines `*` for `SVD`s in the future!)
+"""
+function Base.:*(A::SVD, B::SVD)
+    mat = A.Vt * B.U
+    lmul!(Diagonal(A.S), mat)
+    rmul!(mat, Diagonal(B.S))
+    F = udv!(mat)
+    (A.U * F.U) * Diagonal(F.S) * (F.Vt * B.Vt)
 end
+
+
+
+
+
+
+
+##############################################################
+#
+#                   SVD / UDVt
+#
+##############################################################
 
 
 # Calculates (UDVd)^-1, where U, D, Vd come from SVD decomp.
