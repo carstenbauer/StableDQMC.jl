@@ -77,20 +77,20 @@ function svd_mult(A::SVD, B::SVD)
 end
 
 
-"""
-    *(A::SVD, B::SVD)
+# """
+#     *(A::SVD, B::SVD)
 
-Stabilized multiplication of two SVD decompositions.
+# Stabilized multiplication of two SVD decompositions.
 
-(Type piracy if `LinearAlgebra` defines `*` for `SVD`s in the future!)
-"""
-function Base.:*(A::SVD, B::SVD)
-    mat = A.Vt * B.U
-    lmul!(Diagonal(A.S), mat)
-    rmul!(mat, Diagonal(B.S))
-    F = udv!(mat)
-    (A.U * F.U) * Diagonal(F.S) * (F.Vt * B.Vt)
-end
+# (Type piracy if `LinearAlgebra` defines `*` for `SVD`s in the future!)
+# """
+# function Base.:*(A::SVD, B::SVD)
+#     mat = A.Vt * B.U
+#     lmul!(Diagonal(A.S), mat)
+#     rmul!(mat, Diagonal(B.S))
+#     F = udv!(mat)
+#     (A.U * F.U) * Diagonal(F.S) * (F.Vt * B.Vt)
+# end
 
 
 

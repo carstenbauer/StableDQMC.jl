@@ -103,6 +103,18 @@ end
 
 
 """
+    inv!(res, F::UDT) -> res
+
+Same as `inv` but writes result into preallocated `res`.
+"""
+function inv!(res::M, F::UDT{E, Er, M}) where {E,Er,M}
+    tmp = similar(F.U)
+    ldiv!(tmp, lu(F.T), Diagonal(1 ./ F.D))
+    mul!(res, tmp, F.U')
+    return res
+end
+
+"""
     udt_mult(A::UDT, B::UDT) -> UDT
 
 Stabilized multiplication of two `UDT` decompositions.
@@ -117,15 +129,15 @@ function udt_mult(A::UDT, B::UDT)
 end
 
 
-"""
-    *(A::UDT, B::UDT)
+# """
+#     *(A::UDT, B::UDT)
 
-Stabilized multiplication of two `UDT` decompositions.
-"""
-function Base.:*(A::UDT, B::UDT)
-    mat = A.T * B.U
-    lmul!(Diagonal(A.D), mat)
-    rmul!(mat, Diagonal(B.D))
-    F = udt!(mat)
-    (A.U * F.U) * Diagonal(F.D) * (F.T * B.T)
-end
+# Stabilized multiplication of two `UDT` decompositions.
+# """
+# function Base.:*(A::UDT, B::UDT)
+#     mat = A.T * B.U
+#     lmul!(Diagonal(A.D), mat)
+#     rmul!(mat, Diagonal(B.D))
+#     F = udt!(mat)
+#     (A.U * F.U) * Diagonal(F.D) * (F.T * B.T)
+# end
