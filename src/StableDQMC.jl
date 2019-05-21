@@ -3,11 +3,9 @@ module StableDQMC
 using SparseArrays, LinearAlgebra
 using GenericSVD, JacobiSVD
 
+include("helpers.jl")
 include("qr_udt.jl")
 include("svd.jl")
-
-include("linalg.jl")
-include("Bchain.jl")
 
 
 # Slice matrix chain B_M .... B_1
@@ -16,7 +14,7 @@ export calc_product_chain_stabilized
 
 
 # QR / UDT
-export UDT, inv!, udt_mult, Matrix!
+export UDT, inv!, fact_mult, Matrix!
 export udt!, udt
 
 export inv_one_plus!
@@ -44,8 +42,6 @@ export genericsvd!
 export genericsvd
 export gesvj!
 export gesvj
-
-export svd_mult
 
 export svd_inv_one_plus
 export inv_one_plus!

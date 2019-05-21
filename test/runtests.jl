@@ -33,7 +33,7 @@ using Test, Random, LinearAlgebra
 
         # operations
         @test isapprox(inv(F), inv(x))
-        G = udt_mult(F, F)
+        G = fact_mult(F, F)
         @test isapprox(Matrix(G), x*x)
     end
 
@@ -54,7 +54,7 @@ using Test, Random, LinearAlgebra
 
         a, b = rand(5,5), rand(5,5)
         A, B = svd(a), svd(b)
-        @test isapprox(Matrix(svd_mult(A,B)), a*b)
+        @test isapprox(Matrix(fact_mult(A,B)), a*b)
     end
 
 

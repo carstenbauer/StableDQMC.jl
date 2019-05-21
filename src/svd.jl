@@ -58,16 +58,16 @@ end
 
 # extra operations for SVD factorizations
 """
-    svd_mult(A::SVD, B::SVD) -> SVD
+    fact_mult(A::SVD, B::SVD) -> SVD
 
 Stabilized multiplication of two SVD decompositions.
 Returns a `SVD` factorization object.
 """
-function svd_mult(A::SVD, B::SVD)
+function fact_mult(A::SVD, B::SVD)
     mat = A.Vt * B.U
     lmul!(Diagonal(A.S), mat)
     rmul!(mat, Diagonal(B.S))
-    F = udv!(mat)
+    F = svd!(mat)
     SVD(A.U * F.U, F.S, F.Vt * B.Vt)
 end
 
@@ -86,7 +86,7 @@ myinv(F::SVD) = (Diagonal(1 ./ F.S) * F.Vt)' * F.U'
 #     mat = A.Vt * B.U
 #     lmul!(Diagonal(A.S), mat)
 #     rmul!(mat, Diagonal(B.S))
-#     F = udv!(mat)
+#     F = svd!(mat)
 #     (A.U * F.U) * Diagonal(F.S) * (F.Vt * B.Vt)
 # end
 
@@ -123,7 +123,7 @@ function svd_inv_one_plus(F::SVD; svdalg = svd!)
   t += Diagonal(S)
   u, s, v = svdalg(t)
   a = V * v
-  b = Diagonal(1 ./ s)
+  b = 1 ./ s
   c = inv(U * u)
   SVD(a, b, c)
 end

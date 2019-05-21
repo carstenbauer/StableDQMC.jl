@@ -115,12 +115,12 @@ function inv!(res::M, F::UDT{E, Er, M}) where {E,Er,M}
 end
 
 """
-    udt_mult(A::UDT, B::UDT) -> UDT
+    fact_mult(A::UDT, B::UDT) -> UDT
 
 Stabilized multiplication of two `UDT` decompositions.
 Returns a `UDT` factorization object.
 """
-function udt_mult(A::UDT, B::UDT)
+function fact_mult(A::UDT, B::UDT)
     mat = A.T * B.U
     lmul!(Diagonal(A.D), mat)
     rmul!(mat, Diagonal(B.D))
