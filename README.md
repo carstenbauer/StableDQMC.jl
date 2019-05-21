@@ -1,7 +1,8 @@
-[![](https://img.shields.io/badge/chat-on%20slack-yellow.svg)](https://slackinvite.julialang.org/)
+![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![travis][travis-img]](https://travis-ci.org/crstnbr/StableDQMC.jl)
 [![appveyor][appveyor-img]](https://ci.appveyor.com/project/crstnbr/stabledqmc-jl/branch/master)
 [![codecov][codecov-img]](http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master)
+[![](https://img.shields.io/badge/chat-on%20slack-yellow.svg)](https://slackinvite.julialang.org/)
 [![license: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 <!-- [![coveralls][coveralls-img]](https://coveralls.io/github/crstnbr/BinningAnalysis.jl?branch=master) !-->
 
