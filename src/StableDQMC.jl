@@ -1,6 +1,6 @@
 module StableDQMC
 
-using SparseArrays, LinearAlgebra
+using LinearAlgebra
 using GenericSVD, JacobiSVD
 
 include("helpers.jl")
