@@ -9,13 +9,13 @@ end
 
 """
 
-calc_product_chain(B,N) -> (R, svs)
+calc_Bchain(B,N) -> (R, svs)
 
 Calculate B^N as B*B*B*B*...*B from right to left.
 
 Returns the result `R` and the singular values (column of `svs`) of all intermediate powers (rows of `svs`).
 """
-function calc_product_chain(B, N)
+function calc_Bchain(B, N)
     bs = size(B,1)
     R = Matrix{eltype(B)}(I, bs, bs)
     svs = zeros(eltype(B), N,bs)
@@ -30,27 +30,57 @@ end
 
 
 """
-Does the same as `calc_product_chain` but stabilizes the
+Same as `calc_Bchain` but stabilizes the
 matrix products by intermediate matrix decompositions.
 """
-function calc_product_chain_stabilized(B, N, decomposition_method)
+function calc_Bchain_svd(B, N; svdalg = svd)
     svs = zeros(eltype(B), N,size(B,1))
-    U, D, X = decomposition_method(B)
+    F = svdalg(B)
+    U, S, Vt = F.U, F.S, F.Vt
+    svs[1,:] = log.(S)
+    svc = 2
+
+    for k in 2:N
+        # multiply B from the left to USVt
+        # and update USVt
+        U = B * U
+        U *= Diagonal(S)
+        M = svdalg(U)
+        U, S, Vtnew = M.U, M.S, M.Vt
+        Vt = Vtnew * Vt
+        
+        # keep singular values
+        svs[svc,:] = log.(S)
+        svc += 1
+    end
+    
+    return SVD(U, S, Vt), svs
+end
+
+
+
+"""
+Same as `calc_Bchain` but stabilizes the
+matrix products by intermediate matrix decompositions.
+"""
+function calc_Bchain_qr(B, N)
+    svs = zeros(eltype(B), N,size(B,1))
+    U, D, T = udt(B)
     svs[1,:] = log.(D)
     svc = 2
 
     for k in 2:N
-        # multiply B from the left to UDX
-        # and update UDX
+        # multiply B from the left to UDT
+        # and update UDT
         U = B * U
         U *= Diagonal(D)
-        U, D, Xnew = decomposition_method(U)
-        X = Xnew * X
+        U, D, Tnew = udt(U)
+        T = Tnew * T
         
         # keep singular values
         svs[svc,:] = log.(D)
         svc += 1
     end
     
-    return U, D, X, svs
+    return UDT(U, D, T), svs
 end

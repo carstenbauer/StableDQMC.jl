@@ -9,17 +9,17 @@ include("svd.jl")
 
 
 # Slice matrix chain B_M .... B_1
-export calc_product_chain
-export calc_product_chain_stabilized
+export calc_Bchain, calc_Bchain_qr, calc_Bchain_svd
 
 
 # QR / UDT
 export UDT, inv!, fact_mult, Matrix!
 export udt!, udt
 
+export udt_inv_one_plus
 export inv_one_plus!
 export inv_one_plus
-export udt_inv_one_plus
+
 export udt_inv_sum
 export inv_sum!
 export inv_sum
@@ -27,6 +27,7 @@ export inv_sum
 export udt_inv_one_plus_loh
 export inv_one_plus_loh!
 export inv_one_plus_loh
+
 export udt_inv_sum_loh
 export inv_sum_loh!
 export inv_sum_loh

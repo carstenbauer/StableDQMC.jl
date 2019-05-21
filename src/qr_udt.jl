@@ -153,6 +153,35 @@ end
 #
 ##############################################################
 """
+    udt_inv_one_plus(F::UDT) -> UDT
+
+Stabilized calculation of [1 + UDT]^(-1). Returns and
+`UDT` factorization object.
+
+Optional preallocations via keyword arguments:
+
+  * `u = similar(F.U)`
+  * `t = similar(F.T)`
+"""
+function udt_inv_one_plus(F::UDT; u = similar(F.U), t = similar(F.T))
+  # @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
+  # d = mc.s.d
+  # u = mc.s.tmp
+  # t = mc.s.tmp2
+  U, D, T = F
+
+  m = U' / T
+  m[diagind(m)] .+= D
+
+  utmp, d, ttmp = udt!(m)
+  mul!(u, U, utmp)
+  mul!(t, ttmp, T)
+
+  UDT(inv(t), 1 ./ d, copy(u'))
+end
+
+
+"""
   inv_one_plus!(res, F::UDT) -> res
 
 Same as `inv_one_plus` but stores the result in preallocated `res`.
@@ -188,11 +217,7 @@ Stabilized calculation of `[1 + UDT]^(-1)`:
 
 Faster but potentially less accurate than `inv_one_plus_loh`.
 
-Optional preallocations possible via keyword arguments:
-
-  * `d = similar(F.D)`
-  * `u = similar(F.U)`
-  * `t = similar(F.T)`
+See `udt_inv_one_plus` for preallocation options.
 """
 function inv_one_plus(F::UDT; kwargs...)
   res = similar(F.U)

@@ -152,12 +152,12 @@ In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq
 Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. The positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$ and the product chain, Eq.~\ref{eq:Bchain}, has $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$. We therefore see that the condition number diverges at low temperatures $T=1/\beta = 1/(M \Delta\tau)$ where $M$ is large. In this case roundoff errors due to finite machine precision will spoil the result. We can estimate the breakdown of the computation for the data type \texttt{Float64}, that is double floating-point precision\cite{Goldberg1991}, by solving $\kappa(M) \sim 10^{-17}$ for $M_c$. We find $M_c \approx 100$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures.
 
 \begin{figure}[t]
-	\includegraphics[width=0.45\textwidth]{../notebooks/naive_vs_stable.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/naive_vs_stable.pdf}
 	\caption{\textbf{Numerical instabilities} (green) due to finite machine precision (\texttt{Float64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable}}
 \end{figure}
 
 \begin{figure}[t]
-	\includegraphics[width=0.45\textwidth]{../notebooks/naive_vs_stable_db64.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/naive_vs_stable_db64.pdf}
 	\caption{\textbf{Numerical instabilities} due to finite machine precision (\texttt{Double64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
@@ -230,30 +230,30 @@ In the following we want to assess how the mentioned matrix decompositions perfo
 \subsection{Accuracy}
 
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{../notebooks/decomp_comparison_simple.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/decomp_comparison_simple.pdf}
 	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values seem to lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$). \label{fig:decomp_comparison_simple}}
 \end{figure}
 
 Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain Eq.~\ref{eq:Bchain} stabilized with different matrix decompositions as a function of it's length $M$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.\footnote{\textcolor{red}{LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'}}\\
 
 \begin{figure}[t]
-	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_regularinv.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_greens_svd_regularinv.pdf}
 	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\eqref{eq:inversion}. \label{fig:greens_accuracy_regularinv}}
 \end{figure}
 
 \begin{figure}[t]
-	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_greens_svd_loh.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_greens_svd_loh.pdf}
 	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:greens_accuracy_loh}}
 \end{figure}
 
 Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity.
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_regularinv.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_det_svd_regularinv.pdf}
 	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
 \end{figure}
 
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{../notebooks/accuracy_det_svd_loh.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_det_svd_loh.pdf}
 	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:det_accuracy_loh}}
 \end{figure}
 
