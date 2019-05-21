@@ -3,8 +3,7 @@ module StableDQMC
 using SparseArrays, LinearAlgebra
 using GenericSVD, JacobiSVD
 
-include("udt_type.jl")
-include("qr.jl")
+include("qr_udt.jl")
 include("svd.jl")
 
 include("linalg.jl")
@@ -46,20 +45,19 @@ export genericsvd
 export gesvj!
 export gesvj
 
-export udv!
-export udv
-
 export svd_mult
 
-export inv_udv!
-export inv_udv
-export inv_one_plus_udv
-export inv_one_plus_udv_alt
-export inv_one_plus_udv_loh!
-export inv_one_plus_udv_loh
-export inv_sum_udvs!
-export inv_sum_udvs
+export svd_inv_one_plus
+export inv_one_plus!
+export inv_one_plus
 
+export svd_inv_one_plus_loh
+export inv_one_plus_loh!
+export inv_one_plus_loh
+
+export svd_inv_sum_loh
+export inv_sum_loh!
+export inv_sum_loh
 
 
 

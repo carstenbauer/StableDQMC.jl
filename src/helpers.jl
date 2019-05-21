@@ -1,4 +1,13 @@
 """
+Calculate the condition number from the given singular values
+"""
+function LinearAlgebra.cond(svs::AbstractVector)
+    mi, ma = extrema(svs)
+    ma / mi
+end
+
+
+"""
 
 calc_product_chain(B,N) -> (R, svs)
 

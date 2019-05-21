@@ -2,20 +2,6 @@ using StableDQMC
 using Test, Random, LinearAlgebra
 
 
-# function illcond_matrix()
-#     n = 8
-#     t = -1
-#     μ = -0.1
-#     Δτ = 0.1
-#     T = diagm(-1 => fill(-t, n-1), 1 => fill(-t, n-1), 0 => fill(μ, n))
-
-#     # PBC
-#     T[1,end] = -t
-#     T[end,1] = -t
-
-#     B = exp(-Δτ .* T)
-#     calc_product_chain_stabilized(B, N, udt)[4];
-# end
 
 
 @testset "StableDQMC.jl" begin
@@ -72,7 +58,14 @@ using Test, Random, LinearAlgebra
     end
 
 
-    @testset "QR / UDT operations (regular)" begin
+
+
+
+
+
+
+
+    @testset "QR / UDT operations" begin
         for dtype in (Float64, ComplexF64)
             x = rand(dtype, 5,5)
             X = udt(x)
@@ -111,6 +104,32 @@ using Test, Random, LinearAlgebra
             @test isapprox(Matrix(udt_inv_sum_loh(X,Y)), inv_sum_xy)
             @test isapprox(inv_sum_loh(X,Y), inv_sum_xy)
             @test isapprox(inv_sum_loh!(res,X,Y), inv_sum_xy)
+            @test isapprox(res, inv_sum_xy)
+        end
+    end
+
+
+
+    @testset "SVD / USVt operations" begin
+        for dtype in (Float64, ComplexF64)
+            x = rand(dtype, 5,5)
+            X = svd(x)
+            y = rand(dtype, 5,5)
+            Y = svd(y)
+            res = similar(x)
+
+            inv_I_plus_x = inv(I + x)
+            inv_sum_xy = inv(x + y)
+
+            @test isapprox(inv_one_plus(X), inv_I_plus_x)
+            @test isapprox(Matrix(svd_inv_one_plus_loh(X)), inv_I_plus_x)
+            @test isapprox(inv_one_plus_loh(X), inv_I_plus_x)
+            @test isapprox(inv_one_plus_loh!(res, X), inv_I_plus_x)
+            @test isapprox(res, inv_I_plus_x)
+
+            @test isapprox(Matrix(svd_inv_sum_loh(X, Y)), inv_sum_xy)
+            @test isapprox(inv_sum_loh(X, Y), inv_sum_xy)
+            @test isapprox(inv_sum_loh!(res, X, Y), inv_sum_xy)
             @test isapprox(res, inv_sum_xy)
         end
     end
