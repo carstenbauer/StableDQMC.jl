@@ -2,7 +2,7 @@
 length(ARGS) >= 2 || error("Please provide two .bench files as input args.")
 
 using Pkg
-Pkg.activate(".")
+Pkg.activate(@__DIR__)
 
 using PkgBenchmark
 

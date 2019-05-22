@@ -2,7 +2,7 @@
 # A branch name or commit id can be supplied as an argument.
 
 using Pkg
-Pkg.activate(".")
+Pkg.activate(@__DIR__)
 
 using PkgBenchmark
 
