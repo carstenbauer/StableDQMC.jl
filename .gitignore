@@ -1,4 +1,6 @@
 .DS_Store
+benchmark/*.bench
+benchmark/*.md
 *.aux
 *.glo
 *.idx
