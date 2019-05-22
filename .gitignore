@@ -1,6 +1,7 @@
 .DS_Store
-benchmark/*.bench
-benchmark/*.md
+test/benchmark/*.bench
+test/benchmark/*.md
+test/benchmark/*.json
 *.aux
 *.glo
 *.idx
