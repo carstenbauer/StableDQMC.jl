@@ -77,34 +77,34 @@ using Test, Random, LinearAlgebra
             inv_I_plus_xydagger = inv(I + x * y')
             inv_sum_xy = inv(x + y)
 
-            @test isapprox(inv_one_plus(X), inv_I_plus_x)
-            @test isapprox(inv_one_plus!(res, X), inv_I_plus_x)
-            @test isapprox(res, inv_I_plus_x)
+            @test inv_one_plus(X) ≈ inv_I_plus_x
+            @test inv_one_plus!(res, X) ≈ inv_I_plus_x
+            @test res ≈ inv_I_plus_x
 
             @test typeof(udt_inv_one_plus(X, Y)) <: UDT
-            @test isapprox(Matrix(udt_inv_one_plus(X, Y)), inv_I_plus_xydagger)
-            @test isapprox(inv_one_plus(X,Y), inv_I_plus_xydagger)
-            @test isapprox(inv_one_plus!(res, X,Y), inv_I_plus_xydagger)
-            @test isapprox(res, inv(I + x * y'))
+            @test Matrix(udt_inv_one_plus(X, Y)) ≈ inv_I_plus_xydagger
+            @test inv_one_plus(X,Y) ≈ inv_I_plus_xydagger
+            @test inv_one_plus!(res, X,Y) ≈ inv_I_plus_xydagger
+            @test res ≈ inv(I + x * y')
 
             @test typeof(udt_inv_sum(X,Y)) <: UDT
-            @test isapprox(Matrix(udt_inv_sum(X,Y)), inv_sum_xy)
-            @test isapprox(inv_sum(X,Y), inv_sum_xy)
-            @test isapprox(inv_sum!(res, X,Y), inv_sum_xy)
-            @test isapprox(res, inv_sum_xy)
+            @test Matrix(udt_inv_sum(X,Y)) ≈ inv_sum_xy
+            @test inv_sum(X,Y) ≈ inv_sum_xy
+            @test inv_sum!(res, X,Y) ≈ inv_sum_xy
+            @test res ≈ inv_sum_xy
 
             # Loh et al variants
             @test typeof(udt_inv_one_plus_loh(X)) <: UDT
-            @test isapprox(Matrix(udt_inv_one_plus_loh(X)), inv_I_plus_x)
-            @test isapprox(inv_one_plus_loh(X), inv_I_plus_x)
-            @test isapprox(inv_one_plus_loh!(res,X), inv_I_plus_x)
-            @test isapprox(res, inv_I_plus_x)
+            @test Matrix(udt_inv_one_plus_loh(X)) ≈ inv_I_plus_x
+            @test inv_one_plus_loh(X) ≈ inv_I_plus_x
+            @test inv_one_plus_loh!(res,X) ≈ inv_I_plus_x
+            @test res ≈ inv_I_plus_x
 
             @test typeof(udt_inv_sum_loh(X,Y)) <: UDT
-            @test isapprox(Matrix(udt_inv_sum_loh(X,Y)), inv_sum_xy)
-            @test isapprox(inv_sum_loh(X,Y), inv_sum_xy)
-            @test isapprox(inv_sum_loh!(res,X,Y), inv_sum_xy)
-            @test isapprox(res, inv_sum_xy)
+            @test Matrix(udt_inv_sum_loh(X,Y)) ≈ inv_sum_xy
+            @test inv_sum_loh(X,Y) ≈ inv_sum_xy
+            @test inv_sum_loh!(res,X,Y) ≈ inv_sum_xy
+            @test res ≈ inv_sum_xy
         end
     end
 
@@ -121,16 +121,16 @@ using Test, Random, LinearAlgebra
             inv_I_plus_x = inv(I + x)
             inv_sum_xy = inv(x + y)
 
-            @test isapprox(inv_one_plus(X), inv_I_plus_x)
-            @test isapprox(Matrix(svd_inv_one_plus_loh(X)), inv_I_plus_x)
-            @test isapprox(inv_one_plus_loh(X), inv_I_plus_x)
-            @test isapprox(inv_one_plus_loh!(res, X), inv_I_plus_x)
-            @test isapprox(res, inv_I_plus_x)
+            @test inv_one_plus(X) ≈ inv_I_plus_x
+            @test Matrix(svd_inv_one_plus_loh(X)) ≈ inv_I_plus_x
+            @test inv_one_plus_loh(X) ≈ inv_I_plus_x
+            @test inv_one_plus_loh!(res, X) ≈ inv_I_plus_x
+            @test res ≈ inv_I_plus_x
 
-            @test isapprox(Matrix(svd_inv_sum_loh(X, Y)), inv_sum_xy)
-            @test isapprox(inv_sum_loh(X, Y), inv_sum_xy)
-            @test isapprox(inv_sum_loh!(res, X, Y), inv_sum_xy)
-            @test isapprox(res, inv_sum_xy)
+            @test Matrix(svd_inv_sum_loh(X, Y)) ≈ inv_sum_xy
+            @test inv_sum_loh(X, Y) ≈ inv_sum_xy
+            @test inv_sum_loh!(res, X, Y) ≈ inv_sum_xy
+            @test res ≈ inv_sum_xy
         end
     end
 
