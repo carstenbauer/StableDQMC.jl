@@ -111,18 +111,23 @@ Stabilized calculation of [1 + USVt]^(-1):
 
 Options for preallocation via keyword arguments:
 
-  * None (yet)
+  * `t = similar(F.U)`
+  * `a = similar(F.U)`
+  * `c = similar(F.U)`
 """
-function svd_inv_one_plus(F::SVD; svdalg = svd!)
-  # TODO: optimize
+function svd_inv_one_plus(F::SVD; svdalg = svd!, t = similar(F.U), a = similar(F.U), c = similar(F.U), internaluse=false)
   U, S, V = F
-  t = U' * V
-  t += Diagonal(S)
+  mul!(t, U', V)
+  t[diagind(t)] .+= S
   u, s, v = svdalg(t)
-  a = V * v
-  b = 1 ./ s
-  c = inv(U * u)
-  SVD(a, b, c)
+  mul!(a, V, v)
+  s .= 1 ./ s
+  mul!(c, u', U')
+  if internaluse
+    SVD(a, s, c)
+  else
+    SVD(copy(a), s, copy(c))
+  end
 end
 
 
@@ -138,7 +143,7 @@ Writes the result into `res`.
 See `svd_inv_one_plus` for preallocation options.
 """
 function inv_one_plus!(res, F::SVD; kwargs...)
-  M = svd_inv_one_plus(F; kwargs...)
+  M = svd_inv_one_plus(F; internaluse=true, kwargs...)
   rmul!(M.U, Diagonal(M.S))
   mul!(res, M.U, M.Vt)
   res
