@@ -72,9 +72,6 @@ function fact_mult(A::SVD, B::SVD)
 end
 
 
-myinv(F::SVD) = (Diagonal(1 ./ F.S) * F.Vt)' * F.U'
-
-
 # """
 #     *(A::SVD, B::SVD)
 
