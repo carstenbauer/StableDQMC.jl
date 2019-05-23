@@ -16,11 +16,11 @@ using Test, Random, LinearAlgebra
         F = udt(x)
         u,d,t = F
 
-        @test isapprox(u * u', I) # unitarity of u
+        @test u * u' ≈ I # unitarity of u
         @test isreal(d)
         @test sort!(count.(iszero,eachcol(t))) == 0:9 # triangularity of t (istriu(t) == false due to pivoting)
-        @test isapprox(Matrix(F), x)
-        @test isapprox(u * Diagonal(d) * t, x)
+        @test Matrix(F) ≈ x
+        @test u * Diagonal(d) * t ≈ x
 
         @test size(F) == size(x)
         @test typeof(similar(F)) == UDT{Float64,Float64,Array{Float64,2}}
@@ -32,9 +32,9 @@ using Test, Random, LinearAlgebra
 
 
         # operations
-        @test isapprox(inv(F), inv(x))
+        @test inv(F) ≈ inv(x)
         G = fact_mult(F, F)
-        @test isapprox(Matrix(G), x*x)
+        @test Matrix(G) ≈ x*x
     end
 
 
@@ -45,16 +45,16 @@ using Test, Random, LinearAlgebra
 
                 F = decomp(x)
                 @test typeof(F) <: SVD
-                @test isapprox(Matrix(F), x)
-                @test isapprox(F.U * F.U', I)
+                @test Matrix(F) ≈ x
+                @test F.U * F.U' ≈ I
                 @test isreal(F.S)
-                @test isapprox(F.Vt * F.Vt', I)
+                @test F.Vt * F.Vt' ≈ I
             end
         end
 
         a, b = rand(5,5), rand(5,5)
         A, B = svd(a), svd(b)
-        @test isapprox(Matrix(fact_mult(A,B)), a*b)
+        @test Matrix(fact_mult(A,B)) ≈ a*b
     end
 
 
