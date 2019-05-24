@@ -193,8 +193,9 @@ with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_loh} in \texttt{StableDQMC.jl}), where we initially separate the scales in as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions, is given by\cite{Loh2005, Loh1989}
 \begin{align}
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber\\
-	&= [(D_p^{-1} X^{-1} + U D_m) D_p X]^{-1} \nonumber \\
-	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{D_p^{-1} X^{-1} + UD_m}_{udx})^{-1}]}_{udx} \label{eq:inversion_loh} \\
+	&= [\mathbb{1} + UD_mD_pX]^{-1} \nonumber\\
+	&= [(X^{-1} D_p^{-1} + U D_m) D_p X]^{-1} \label{eq:inversion_loh} \\
+	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{X^{-1} D_p^{-1} + UD_m}_{udx})^{-1}]}_{udx} \\
 	&= U_r D_r X_r, \nonumber
 \end{align}
 with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. We will demonstrate below that it is sometimes necessary to employ this second procedure to obtain accurate results for $G$.\\
