@@ -1,3 +1,10 @@
+#
+#
+#   These methods are for testing purposes only.
+#   They are not optimized at all.
+#
+#
+
 """
 Calculate the condition number from the given singular values
 """
@@ -83,4 +90,45 @@ function calc_Bchain_qr(B, N)
     end
     
     return UDT(U, D, T), svs
+end
+
+
+
+"""
+Calculate fake "G(τ, 0)", i.e. [B^-N1 + B^N2]^-1
+"""
+function calc_tdgf_qr(B, N1, N2; inv_sum_method = inv_sum)
+  if N1 != 0
+    udtl = calc_Bchain_qr(inv(B), N1) # TODO
+  else
+    udtl = udt!(Matrix(I*one(eltype(B)), size(B)))
+  end
+
+  if N2 != 0
+    udtr = calc_Bchain_qr(B, N2)[1]
+  else
+    udtr = udt!(Matrix(I*one(eltype(B)), size(B)))
+  end
+
+  inv_sum_method(udtl, udtr)
+end
+
+
+"""
+Calculate fake "G(τ, 0)", i.e. [B^-N1 + B^N2]^-1
+"""
+function calc_tdgf_svd(B, N1, N2; inv_sum_method = inv_sum)
+  if N1 != 0
+    svdl = calc_Bchain_svd(inv(B), N1) # TODO
+  else
+    svdl = svd!(Matrix(I*one(eltype(B)), size(B)))
+  end
+
+  if N2 != 0
+    svdr = calc_Bchain_svd(B, N2)[1]
+  else
+    svdr = svd!(Matrix(I*one(eltype(B)), size(B)))
+  end
+
+  inv_sum_method(svdl, svdr)
 end

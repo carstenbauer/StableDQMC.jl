@@ -10,6 +10,7 @@ include("svd.jl")
 
 # Slice matrix chain B_M .... B_1
 export calc_Bchain, calc_Bchain_qr, calc_Bchain_svd
+export calc_tdgf_qr, calc_tdgf_svd
 
 
 # QR / UDT

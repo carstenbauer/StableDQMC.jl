@@ -334,9 +334,6 @@ These findings suggest that only the QR decomposition, independent of the invers
 
 %\afterpage{\clearpage}
 \section{Time-displaced Green's function}
-\citet{Loh2005} method
-Hirsch method\cite{Hirsch1988}
-
 We generalize our definition of the equal times Green's function, Eq.~\ref{etgf}, to include the imaginary time $\tau = l \Delta \tau$ dependence,
 \begin{align}
 G(\tau) = \langle c_{i} c_{j}^\dagger \rangle_{\phi_l} = \left( 1 + B_{l-1}\dots B_1 B_M \dots B_l \right)^{-1}.
@@ -368,7 +365,7 @@ As a first explicit procedure, we consider a simple generalization of Eq.~\ref{e
 \end{align}
 where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 
-Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scales in $D$, is as follows (\texttt{inv\_sum\_loh} in \texttt{StableDQMC.jl}),
+Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scales in $D$, is as follows (\texttt{inv\_sum\_loh} in \texttt{StableDQMC.jl}),\cite{Loh2005}
 \begin{align}
 	G(\tau_1, \tau_2) &= [U_L D_L X_L + U_R D_R X_R]^{-1} \nonumber\\
 	&= [U_L D_{Lm} D_{Lp} X_L + U_R D_{Rm} D_{Rp} X_R]^{-1} \nonumber\\
@@ -378,9 +375,11 @@ Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scal
 \end{align}
 with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
+\subsection{Accuracy}
 
 
 
+\textcolor{blue}{OPT: Mention Hirsch method}\cite{Hirsch1988}
 
 
 
