@@ -13,10 +13,10 @@ uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
 version = "0.3.1"
 
 [[AxisAlgorithms]]
-deps = ["Compat", "WoodburyMatrices"]
-git-tree-sha1 = "99dabbe853e4f641ab21a676131f2cf9fb29937e"
+deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
+git-tree-sha1 = "a4d07a1c313392a77042855df46c5f534076fab9"
 uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
-version = "0.3.0"
+version = "1.0.0"
 
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -62,6 +62,12 @@ deps = ["Dates", "Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "Ra
 git-tree-sha1 = "5c4c26ffc9075f5a425efdc6e40c6f8f11fa52ec"
 uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 version = "0.13.1"
+
+[[CodeTracking]]
+deps = ["InteractiveUtils", "Test", "UUIDs"]
+git-tree-sha1 = "9b21a2dfe51ba71fdc5688039075819196595367"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "0.5.7"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -126,10 +132,10 @@ deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqDiffTools]]
-deps = ["LinearAlgebra", "Test"]
-git-tree-sha1 = "30f82c63cb9d293513b360572e283c19577fcf82"
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "07991282c76bcd9331f96f786acbeb1775f1f8d5"
 uuid = "01453d9d-ee7c-5054-8395-0335cb756afa"
-version = "0.8.1"
+version = "0.10.0"
 
 [[DiffResults]]
 deps = ["Compat", "StaticArrays"]
@@ -171,11 +177,13 @@ git-tree-sha1 = "29cda58afbf62f35b1a094882ad6c745a47b2eaa"
 uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 version = "0.2.4"
 
+[[FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
+
 [[FixedPointNumbers]]
-deps = ["Test"]
-git-tree-sha1 = "b8045033701c3b10bf2324d7203404be7aef88ba"
+git-tree-sha1 = "d14a6fa5890ea3a7e5dcab6811114f132fec2b4b"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.5.3"
+version = "0.6.1"
 
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "InteractiveUtils", "LinearAlgebra", "NaNMath", "Random", "SparseArrays", "SpecialFunctions", "StaticArrays", "Test"]
@@ -206,10 +214,10 @@ uuid = "c145ed77-6b09-5dd9-b285-bf645a82121e"
 version = "0.2.3"
 
 [[GeometryTypes]]
-deps = ["ColorTypes", "FixedPointNumbers", "IterTools", "LinearAlgebra", "StaticArrays", "Test"]
-git-tree-sha1 = "a9bc71d5a7eb971b61db353eb66c4a1de0551d8c"
+deps = ["ColorTypes", "FixedPointNumbers", "IterTools", "LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "05796e9ac5a8fb8adfdcdf842fb8737d1cb5924e"
 uuid = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
-version = "0.7.3"
+version = "0.7.4"
 
 [[InteractiveUtils]]
 deps = ["Markdown"]
@@ -217,9 +225,9 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[Interpolations]]
 deps = ["AxisAlgorithms", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
-git-tree-sha1 = "63665619f2b1a791d3c223acd8bc9155464f3dd3"
+git-tree-sha1 = "f38e6a95b7dc441cb6fc8559c64a1cb3bb7ec6ca"
 uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
-version = "0.12.0"
+version = "0.12.1"
 
 [[IterTools]]
 deps = ["SparseArrays", "Test"]
@@ -252,6 +260,12 @@ repo-url = "https://github.com/RalphAS/JacobiSVD.jl"
 uuid = "2ca068c6-2156-5cf0-8317-c67edf277a2c"
 version = "0.0.0"
 
+[[JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "599cc7c6683e54cd0b3786ee37800db037e22df4"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.5.2"
+
 [[KernelDensity]]
 deps = ["Distributions", "FFTW", "Interpolations", "Optim", "StatsBase", "Test"]
 git-tree-sha1 = "c1048817fe5711f699abc8fabd47b1ac6ba4db04"
@@ -282,6 +296,12 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "dc151afc3125e225267a55e2b5592d0b90fb0e1a"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "0.3.5"
 
 [[MacroTools]]
 deps = ["CSTParser", "Compat", "DataStructures", "Test"]
@@ -467,6 +487,12 @@ deps = ["Test"]
 git-tree-sha1 = "f6fbf4ba64d295e146e49e021207993b6b48c7d1"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "0.5.2"
+
+[[Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "UUIDs", "Unicode"]
+git-tree-sha1 = "0148fc4b3392778e09eb75c4971ce75424acd1d1"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "2.1.5"
 
 [[Rmath]]
 deps = ["BinaryProvider", "Libdl", "Random", "Statistics", "Test"]
