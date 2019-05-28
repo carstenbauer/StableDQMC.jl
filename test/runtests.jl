@@ -127,6 +127,11 @@ using Test, Random, LinearAlgebra
             @test inv_one_plus_loh!(res, X) ≈ inv_I_plus_x
             @test res ≈ inv_I_plus_x
 
+            @test Matrix(svd_inv_sum(X, Y)) ≈ inv_sum_xy
+            @test inv_sum(X, Y) ≈ inv_sum_xy
+            @test inv_sum!(res, X, Y) ≈ inv_sum_xy
+            @test res ≈ inv_sum_xy
+
             @test Matrix(svd_inv_sum_loh(X, Y)) ≈ inv_sum_xy
             @test inv_sum_loh(X, Y) ≈ inv_sum_xy
             @test inv_sum_loh!(res, X, Y) ≈ inv_sum_xy

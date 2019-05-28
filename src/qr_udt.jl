@@ -327,10 +327,9 @@ Stabilized calculation of [UaDaTa + UbDbTb]^(-1):
 
 Optional preallocations via keyword arguments:
 
-  * `tmp = similar(A.U)`
   * `m2 = similar(A.U)`
 """
-function udt_inv_sum(A::UDT, B::UDT; tmp = similar(A.U), m2 = similar(A.U))
+function udt_inv_sum(A::UDT, B::UDT; m2 = similar(A.U))
   Ua,Da,Ta = A
   Ub,Db,Tb = B
 

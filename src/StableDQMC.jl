@@ -53,6 +53,10 @@ export svd_inv_one_plus_loh
 export inv_one_plus_loh!
 export inv_one_plus_loh
 
+export svd_inv_sum
+export inv_sum!
+export inv_sum
+
 export svd_inv_sum_loh
 export inv_sum_loh!
 export inv_sum_loh
