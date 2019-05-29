@@ -51,6 +51,7 @@ longbibliography,
 \usepackage{hyperref}% add hypertext capabilities
 \usepackage{afterpage}
 \usepackage{bbold}
+\usepackage{times}
 %\usepackage[mathlines]{lineno}% Enable numbering of text and display math
 %\linenumbers\relax % Commence numbering lines
 
@@ -331,8 +332,14 @@ These findings suggest that only the QR decomposition, independent of the invers
 
 \subsection{Efficiency}
 
+The most costly part of the Green's function calculation are the matrix decompositions. As discussed above, we apply them multiple times to stabilize the computation of the slice matrix product chain and, depending on the inversion scheme, once or twice to obtain the Green's functions from it. Fig.~\ref{fig:benchmark_decomps} illustrates the raw efficiency of SVDs relative to QR decompositions. While still being slower, only the divide-and-conquer based SVD is in the same ballpark as the QR decomposition. The Jacobi SVD variant is, by far, the most costly of all considered matrix decompositions, being more than a factor of 10 slower than QR even for small system sizes.
 
-\textcolor{red}{TODO: argue with number of decomps, although explicit invs are more expensive}
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{figures/benchmark_decomps.pdf}
+	\caption{\textbf{Efficiency of different matrix decompositions}. Shown are the slowdown factors of single SVDs relative to a QR decomposition of a complex matrix of size $N \times N$. \label{fig:benchmark_decomps}}
+\end{figure}
+
+
 
 \begin{figure}
 	\includegraphics[width=0.45\textwidth]{figures/benchmark_fact_inv_one_plus.pdf}
@@ -406,8 +413,8 @@ with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
 
 
-\afterpage{\clearpage}
-%\clearpage
+%\afterpage{\clearpage}
+\clearpage
 \bibliography{references}
 %\clearpage
 %\appendix
