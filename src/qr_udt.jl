@@ -8,7 +8,8 @@ struct UDT{E,Er<:Real,M<:AbstractArray{E}} <: Factorization{E}
     end
 end
 
-UDT(U::AbstractArray{E}, D::Vector{Er}, T::AbstractArray{E}) where {E,Er<:Real} = UDT{E,Er,typeof(U)}(U, D, T)
+UDT(U::AbstractArray{E}, D::Vector{Er}, T::AbstractArray{E}) where {E,Er<:Real} =
+    UDT{E,Er,typeof(U)}(U, D, T)
 function UDT{E}(U::AbstractArray, D::AbstractVector{Er}, T::AbstractArray) where {E,Er<:Real}
     UDT(convert(AbstractArray{E}, U),
         convert(Vector{Er}, D),
@@ -60,8 +61,8 @@ end
 
 
 """
-`udv!` is the same as `svd`, but saves space by overwriting the input `A`, instead of creating a
-copy.
+`udv!` is the same as `svd`, but saves space by overwriting the input `A`,
+instead of creating a copy.
 """
 function udt!(A::AbstractMatrix{C}) where {C<:Number}
   F = qr!(A, Val(true))
@@ -186,7 +187,10 @@ end
 
 Same as `inv_one_plus` but stores the result in preallocated `res`.
 """
-function inv_one_plus!(res, F::UDT; u = similar(F.U), d = similar(F.D), t = similar(F.T))
+function inv_one_plus!(res, F::UDT;
+                       u = similar(F.U),
+                       d = similar(F.D),
+                       t = similar(F.T))
   # @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
   # d = mc.s.d
   # u = mc.s.tmp
@@ -199,9 +203,9 @@ function inv_one_plus!(res, F::UDT; u = similar(F.U), d = similar(F.D), t = simi
   utmp, d, ttmp = udt!(m)
   mul!(u, U, utmp)
   mul!(t, ttmp, T)
-    
+
   ldiv!(m, lu!(t), Diagonal(1 ./ d))
-    
+
   mul!(res, m, u')
   res
 end
@@ -250,7 +254,11 @@ Optional preallocations via keyword arguments:
   * `tmp2 = similar(A.U)`
   * `tmp3 = similar(A.U)`
 """
-function udt_inv_one_plus(A::UDT, Bdagger::UDT; tmp = similar(A.U), tmp2 = similar(A.U), tmp3 = similar(A.U), internaluse = false)
+function udt_inv_one_plus(A::UDT, Bdagger::UDT;
+                          tmp = similar(A.U),
+                          tmp2 = similar(A.U),
+                          tmp3 = similar(A.U),
+                          internaluse = false)
   # s = mc.s
   # tmp = mc.s.tmp
   # tmp2 = mc.s.tmp2
@@ -421,7 +429,7 @@ function udt_inv_one_plus_loh(F::UDT; r = similar(F.U),
 
   Dp .= max.(D,1.)
   Dm .= min.(D,1.)
-  
+
   Dp .\= 1
   Dpinv = Dp # renaming
 
@@ -524,9 +532,9 @@ function udt_inv_sum_loh(A::UDT, B::UDT; mat2 = similar(A.U),
                                          internaluse = false)
     Ua, Da, Ta = A
     Ub, Db, Tb = B
-    
+
     d = length(Da)
-        
+
     # separating scales larger and smaller than unity
     Dap .= max.(Da,1.)
     Dam .= min.(Da,1.)
@@ -540,14 +548,14 @@ function udt_inv_sum_loh(A::UDT, B::UDT; mat2 = similar(A.U),
     end
 
     # mat2 = 1/(Dap) * Ua' * Ub * Dbm
-    mul!(mat2, Ua', Ub)    
+    mul!(mat2, Ua', Ub)
     @inbounds for j in 1:d, k in 1:d
         mat2[j,k]=mat2[j,k] * Dbm[k]/Dap[j]
     end
-    
+
     # mat1 = mat1 + mat2
     mat1 .+= mat2
-    
+
     # decompose mat1: U, D, T
     U, D, T = udt!(mat1)
 

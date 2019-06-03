@@ -51,6 +51,7 @@ longbibliography,
 \usepackage{hyperref}% add hypertext capabilities
 \usepackage{afterpage}
 \usepackage{bbold}
+\usepackage{times}
 %\usepackage[mathlines]{lineno}% Enable numbering of text and display math
 %\linenumbers\relax % Commence numbering lines
 
@@ -58,7 +59,7 @@ longbibliography,
 
 \begin{document}
 
-\title{Notes on numerical stabilization in determinant quantum Monte Carlo}% Force line breaks with \\
+\title{Fast and stable determinant quantum Monte Carlo in Julia}% Force line breaks with \\
 
 \author{Carsten Bauer}
 \affiliation{Institute for Theoretical Physics, University of Cologne, 50937 Cologne, Germany}
@@ -67,7 +68,7 @@ longbibliography,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-In these notes we will empirically compare different matrix decompositions for use in numerical stabilization in many-body quantum Monte Carlo simulation, in particular when calculating equal time Green's functions. We will both benchmark their speed and accuracy. We will further show that special care has to be taken when calculating time-displaced Green's functions and will review a well-known but somewhat hard to find method for stabilizing the necessary inversion in this case. We will focus on and use the Julia programming language for all calculations. An implementation of all discussed methods is available in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+In this manuscript we review how numerical instabilities come about in fermion many-body quantum Monte Carlo simulations, in particular when calculating Green's functions, and empirically compare matrix decomposition algorithms and inversion schemes to heal them. Besides numerical accuracy we also investigate the computational efficiency of different stabilization methods. Concretely, we use the Julia programming language and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 \end{abstract}
 
 
@@ -75,11 +76,9 @@ In these notes we will empirically compare different matrix decompositions for u
 
 %\tableofcontents
 
-\section{\label{sec:why}The issue}
+\section{Quantum Monte Carlo}
 
-\subsection{Determinant quantum Monte Carlo in a nutshell}
-
-For the description of the DQMC algorithm\cite{Blankenbecler1981}, we consider a quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$, which comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
+For the description of the determinant quantum Monte Carlo (DQMC) algorithm\cite{Blankenbecler1981}, we consider a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$, which comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
 interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
 %
 \begin{equation}
@@ -111,9 +110,9 @@ where
 \end{align}
 is the equal-time Green's function.
 
-Only under specific circumstances, such as the presence of a symmetry, can the integral kernel be safely be interpreted as a probability weight, as $G_\phi$ and its determinant are generally complex valued (\textit{sign problem}).
+Only under specific circumstances, such as the presence of a symmetry, can the integral kernel be safely interpreted as a probability weight. Generally, $G_\phi$ and its determinant are complex valued - the famous sign problem.
 
-\subsection{Numerical instabilities - Model system}
+\section{Numerical instabilities}
 
 We consider the following simple non-interacting model system in one dimension,
 \begin{align}
@@ -133,7 +132,8 @@ where we set the hopping amplitude to $t=-1$ and the chemical potential to $\mu=
 %\end{array}
 %\right].
 %\end{align}
-Generally, we are interested in the equal time Green's function $G$, Eq.~\eqref{etgf}, as an observable and it's determinant, which enters into the probability weight in Eq.~$\eqref{eq:DQMC}$. Let's make the latter point a bit more precise. In a Metropolis scheme,
+
+In the DQMC method, we need to compute the equal time Green's function $G$ (Eq.~\ref{etgf}) and it's determinant, which enters into the probability weight (Eq.~$\ref{eq:DQMC}$). Let's make the latter point a bit more precise. In a Metropolis scheme,
 \begin{align}
 p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis}
 \end{align}
@@ -141,15 +141,15 @@ it is actually the ratio of determinants which determines the acceptance or reje
 
 We will showcase the issue of numerical instabilities arising in the computation of $G$ by discussing the accuracy of the calculation of the building block of $G$, the slice matrix product chain
 \begin{align}
-B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
+B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
 \end{align}
-Here the second equality stems from the fact that our model, Eq.~\ref{eq:model}, is non-interacting and the slice matrices $B_l$ do neither depend on any Hubbard-Stratonovich boson field nor on imaginary time.
+Here, the second equality stems from the fact that our model, Eq.~\ref{eq:model}, is non-interacting and the slice matrices $B_l$ do neither depend on the Hubbard-Stratonovich boson field nor explicitly on imaginary time.
 
-In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $M \geq M_c \approx 100$. Leaving a discussion of how to stabilize the product for the next section, let us understand the origin of this instability. The eigenvalues of the system are given by
+In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of how to stabilize the product for the next section, let us understand the origin of this instability. The eigenvalues of the system are given by
 \begin{align}
 	&\epsilon_k = -2t\cos(k) + \mu.
 \end{align}
-Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. The positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$ and the product chain, Eq.~\ref{eq:Bchain}, has $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$. We therefore see that the condition number diverges at low temperatures $T=1/\beta = 1/(M \Delta\tau)$ where $M$ is large. In this case roundoff errors due to finite machine precision will spoil the result. We can estimate the breakdown of the computation for the data type \texttt{Float64}, that is double floating-point precision\cite{Goldberg1991}, by solving $\kappa(M) \sim 10^{-17}$ for $M_c$. We find $M_c \approx 100$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures.
+Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. The positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$ and the product chain, Eq.~\ref{eq:Bchain}, has $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$. We therefore see that the condition number diverges at low temperatures $T=1/\beta$. In this case roundoff errors due to finite machine precision will spoil the result. We can estimate the breakdown of the computation for the data type \texttt{Float64}, that is double floating-point precision\cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. We find $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures.
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{figures/naive_vs_stable.pdf}
@@ -163,9 +163,9 @@ Neglecting the contribution by the chemical potential for simplicity, the energy
 
 \section{\label{sec:stabilization}Stabilization schemes}
 
-One way to solve all problems is to switch to arbitrary precision numerics. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (very) slow performance since, among other things, \texttt{BigFloat} lacks hardware support. Arbitrary precision numerics is still a valuable tool and we will use it to benchmark the accuracy of stabilization methods below.
+A trivial solution to the issue outlined above is arbitrary precision numerics. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
 
-How can we remedy the numerical issue outlined above in a floating point precision computation? The idea is to keep different scales separated throughout the computation as long as possible and only mix them in the final step, if necessary. A way to realize this is by deploying matrix decompositions, which we write generally as
+How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is to keep different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A way to realize this is by deploying matrix decompositions, which we write generally as
 \begin{align}
 	B = UDX.
 \end{align}
@@ -178,9 +178,12 @@ B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumbe
 &= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\
 &= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\eqref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.} \textcolor{red}{TODO: Mention safe mult}
+with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\ref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.} \textcolor{red}{TODO: Mention safe mult}
 
-Using this scheme, we have to be careful to keep different scales separated in the equal-time Green's function calculation, Eq.~\ref{etgf}, as well. A straightforward procedure (\texttt{inv\_one\_plus} in \texttt{StableDQMC.jl}) to add the unit matrix and perform the inversion in a stabilized manner is given by\cite{Santos2003, Assaad2002a}
+\subsection{Equal-time Green's function}
+Looking at the equal-time Green's function in Eq.~\ref{etgf}, we have to be careful to keep scales separated in the inversion of $1 + B(\beta, 0)$ as well. In fact, small singular values of the order of unity in $B(\beta, 0)$ would even be washed away just by naively adding the identity matrix alone. Fortunately, these issues can be circumvented as well.
+
+A straightforward procedure (\texttt{inv\_one\_plus} in \texttt{StableDQMC.jl}) to add the unit matrix and perform the inversion in a stabilized manner is given by\cite{Santos2003, Assaad2002a}
 
 \begin{align}
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber \\
@@ -200,9 +203,9 @@ Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_loh} in
 \end{align}
 with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. We will demonstrate below that it is sometimes necessary to employ this second procedure to obtain accurate results for $G$.\\
 
-So far we haven't specified a concrete decomposition $B = UDX$. In fact, there are a couple of choices, two of which we will focus on in what follows.
+So far we haven't specified a concrete decomposition ${B = UDX}$. In fact, there are a couple of choices, two of which we will focus on in what follows.
 
-\subsection{SVD ($UDV^\dagger$)}
+\subsubsection{SVD ($UDV^\dagger$)}
 A SVD is given by
 \begin{align}
 	B = USV^\dagger,
@@ -217,16 +220,16 @@ Julia offers a couple of purely-Julia SVD implementations, like \href{https://gi
 \end{itemize}
 which can be readily accessed via convenience wrappers of the same name exported by \texttt{StableDQMC.jl}. We will compare all of them below.
 
-\subsection{QR ($UDT$)}
+\subsubsection{QR ($UDT$)}
 A QR decomposition reads
 \begin{align}
 B = QR = UDT,
 \end{align}
-where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}. The splitting into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in in \texttt{StableDQMC.jl}.
+where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}. Analogously, a decomposition into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
 
 \section{Benchmarks}
 
-In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of the slice matrix product chain $B_M \cdots B_1$, the Green's function $G$, and it's determinant $\det G$, both with respect to accuracy and speed, for our model system in Eq.~\ref{eq:model}.
+In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed, for our free fermion model system, Eq.~\ref{eq:model}.
 
 \subsection{Accuracy}
 
@@ -235,7 +238,7 @@ In the following we want to assess how the mentioned matrix decompositions perfo
 	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values seem to lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$). \label{fig:decomp_comparison_simple}}
 \end{figure}
 
-Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain Eq.~\ref{eq:Bchain} stabilized with different matrix decompositions as a function of it's length $M$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.\footnote{\textcolor{red}{LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'}}\\
+Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain $B(\beta, 0)$ stabilized with different matrix decompositions as a function of inverse temperature $\beta$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.\footnote{\textcolor{red}{LAPACK SVD error bounds\cite{errorbounds} '\textit{Thus large singular values (those near $\sigma_1$) are computed to high relative accuracy and small ones may not be.}'}}\\
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_greens_svd_regularinv.pdf}
@@ -247,7 +250,7 @@ Before benchmarking the efficiency of an algorithm, it is crucial to check it's 
 	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:greens_accuracy_loh}}
 \end{figure}
 
-Turning to the equal-time Green's function, Eq.~\eqref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity.
+Turning to the equal-time Green's function, Eq.~\ref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity.
 \begin{figure}
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_det_svd_regularinv.pdf}
 	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}. \label{fig:det_accuracy_regularinv}}

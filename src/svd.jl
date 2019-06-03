@@ -115,7 +115,12 @@ Options for preallocation via keyword arguments:
   * `a = similar(F.U)`
   * `c = similar(F.U)`
 """
-function svd_inv_one_plus(F::SVD; svdalg = svd!, t = similar(F.U), a = similar(F.U), c = similar(F.U), internaluse=false)
+function svd_inv_one_plus(F::SVD;
+                          svdalg = svd!,
+                          t = similar(F.U),
+                          a = similar(F.U),
+                          c = similar(F.U),
+                          internaluse=false)
   U, S, V = F
   mul!(t, U', V)
   t[diagind(t)] .+= S
@@ -182,7 +187,12 @@ Options for preallocation via keyword arguments:
   * `Dp = similar(F.D)`
   * `Dm = similar(F.D)`
 """
-function svd_inv_one_plus_loh(F::SVD; svdalg = svd!, Sp = similar(F.S), Sm = similar(F.S), l = similar(F.V), r = similar(F.U))
+function svd_inv_one_plus_loh(F::SVD;
+                              svdalg = svd!,
+                              Sp = similar(F.S),
+                              Sm = similar(F.S),
+                              l = similar(F.V),
+                              r = similar(F.U))
   U, S, V = F
 
   copyto!(l, V)
@@ -268,9 +278,9 @@ Options for preallocations via keyword arguments:
 function svd_inv_sum_loh(A::SVD, B::SVD; svdalg = svd!)
     Ua, Sa, Va = A
     Ub, Sb, Vb = B
-    
+
     d = length(Sa)
-    
+
     Sap = max.(Sa,1.)
     Sam = min.(Sa,1.)
     Sbp = max.(Sb,1.)
@@ -285,9 +295,9 @@ function svd_inv_sum_loh(A::SVD, B::SVD; svdalg = svd!)
     for j in 1:d, k in 1:d
         mat2[j,k]=mat2[j,k] * Sbm[k]/Sap[j]
     end
-    
+
     mat1 = mat1 + mat2
-    
+
     M = svdalg(mat1)
     mat1 = inv(M)
 
