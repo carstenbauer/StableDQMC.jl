@@ -258,6 +258,75 @@ end
 
 
 
+"""
+    svd_inv_sum(A::SVD, B::SVD) -> SVD
+
+Stabilized calculation of [UaSaVta + UbSbVtb]^(-1):
+
+  * Use one intermediate SVD decompositions.
+
+Options for preallocations via keyword arguments:
+
+  * `m1 = similar(A.U)`
+  * `m2 = similar(A.U)`
+
+"""
+function svd_inv_sum(A::SVD, B::SVD; m1 = similar(A.U), m2 = similar(A.U), svdalg = svd!, internaluse = false)
+  Ua, Sa, Va = A
+  Ub, Sb, Vb = B
+
+  mul!(m1, Va', Vb)
+  lmul!(Diagonal(Sa), m1)
+
+  mul!(m2, Ua', Ub)
+  rmul!(m2, Diagonal(Sb))
+
+  u,s,v = svdalg(m1 + m2)
+
+  mul!(m1, Ua, u)
+  mul!(m2, Vb, v)
+
+  if internaluse
+    SVD(m2, 1 ./ s, m1')
+  else
+    SVD(copy(m2), 1 ./ s, copy(m1'))
+  end
+end
+
+
+"""
+    inv_sum!(res, A::SVD, B::SVD) -> res
+
+Stabilized calculation of [UaSaVta + UbSbVtb]^(-1):
+
+  * Use one intermediate SVD decompositions.
+
+Writes the result into `res`.
+
+See `svd_inv_sum` for preallocation options.
+"""
+function inv_sum!(res, A::SVD, B::SVD; kwargs...)
+  M = svd_inv_sum(A, B; internaluse = true, kwargs...)
+  rmul!(M.U, Diagonal(M.S))
+  mul!(res, M.U, M.Vt)
+  res
+end
+
+"""
+    inv_sum(A::SVD, B::SVD) -> res
+
+Stabilized calculation of [UaSaVta + UbSbVtb]^(-1):
+
+  * Use one intermediate SVD decompositions.
+
+See `svd_inv_sum` for preallocation options.
+"""
+function inv_sum(A::SVD, B::SVD; kwargs...)
+  res = similar(A.U)
+  inv_sum!(res, A, B; kwargs...)
+  res
+end
+
 
 
 

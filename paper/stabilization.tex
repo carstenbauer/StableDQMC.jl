@@ -198,7 +198,7 @@ Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_loh} in
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber\\
 	&= [\mathbb{1} + UD_mD_pX]^{-1} \nonumber\\
 	&= [(X^{-1} D_p^{-1} + U D_m) D_p X]^{-1} \label{eq:inversion_loh} \\
-	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{X^{-1} D_p^{-1} + UD_m}_{udx})^{-1}]}_{udx} \\
+	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{X^{-1} D_p^{-1} + UD_m}_{udx})^{-1}]}_{udx} \nonumber \\
 	&= U_r D_r X_r, \nonumber
 \end{align}
 with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. We will demonstrate below that it is sometimes necessary to employ this second procedure to obtain accurate results for $G$.\\
@@ -334,6 +334,24 @@ These findings suggest that only the QR decomposition, independent of the invers
 
 \subsection{Efficiency}
 
+The most costly part of the Green's function calculation are the matrix decompositions. As discussed above, we apply them multiple times to stabilize the computation of the slice matrix product chain and, depending on the inversion scheme, once or twice to obtain the Green's functions from it. Fig.~\ref{fig:benchmark_decomps} illustrates the raw efficiency of SVDs relative to QR decompositions. While still being slower, only the divide-and-conquer based SVD is in the same ballpark as the QR decomposition. The Jacobi SVD variant is, by far, the most costly of all considered matrix decompositions, being more than a factor of 10 slower than QR even for small system sizes.
+
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{figures/benchmark_decomps.pdf}
+	\caption{\textbf{Efficiency of different matrix decompositions}. Shown are the slowdown factors of single SVDs relative to a QR decomposition of a complex matrix of size $N \times N$. \label{fig:benchmark_decomps}}
+\end{figure}
+
+
+
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{figures/benchmark_fact_inv_one_plus.pdf}
+	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\eqref{eq:inversion}. \label{fig:greens_benchmark_regularinv}}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{figures/benchmark_fact_inv_one_plus_loh.pdf}
+	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\eqref{eq:inversion_loh}. \label{fig:greens_benchmark_loh}}
+\end{figure}
 
 
 %\afterpage{\clearpage}
@@ -364,8 +382,8 @@ As a first explicit procedure, we consider a simple generalization of Eq.~\ref{e
 \begin{align}
 	G(\tau_1, \tau_2) &= [U_L D_L X_L + U_R D_R X_R]^{-1} \nonumber\\
 	&= [U_L \underbrace{(D_L X_L X_R^{-1} + U_L^\dagger U_R D_R)}_{udx} X_R ]^{-1} \nonumber\\
-	&= [(U_L u) d^{-1} (x X_R)]^{-1} \\
-	&= U_r D_r X_r, 
+	&= [(U_L u) d^{-1} (x X_R)]^{-1} \label{eq:inversion_tdgf}\\
+	&= U_r D_r X_r, \nonumber 
 \end{align}
 where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 
@@ -374,13 +392,23 @@ Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scal
 	G(\tau_1, \tau_2) &= [U_L D_L X_L + U_R D_R X_R]^{-1} \nonumber\\
 	&= [U_L D_{Lm} D_{Lp} X_L + U_R D_{Rm} D_{Rp} X_R]^{-1} \nonumber\\
 	&= \left[U_L D_{Lp} \underbrace{\left( \dfrac{D_{Lm}}{D_{Rp}} X_L X_R^{-1} + U_L^\dagger U_R \dfrac{D_{Rm}}{D_{Lp}} \right)}_{udx} X_R D_{Rp} \right]^{-1} \nonumber\\
-	&= X_R^{-1} \underbrace{\dfrac{1}{D_{Rp}} [udx]^{-1} \dfrac{1}{D_{Lp}}}_{udx} U_L^\dagger \\
-	&= U_r D_r X_r,
+	&= X_R^{-1} \underbrace{\dfrac{1}{D_{Rp}} [udx]^{-1} \dfrac{1}{D_{Lp}}}_{udx} U_L^\dagger \label{eq:inversion_tdgf_loh} \\
+	&= U_r D_r X_r, \nonumber
 \end{align}
 with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
 \subsection{Accuracy}
 
+
+\begin{figure}[b]
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf.pdf}
+	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum}, Eq.~\eqref{eq:inversion_tdgf}, for $\beta = 20$. \textcolor{red}{Why isn't QR even worse here?} \label{fig:tdgf_accuracy_regularinv}}
+\end{figure}
+
+\begin{figure}[b]
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf_loh.pdf}
+	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum\_loh}, Eq.~\eqref{eq:inversion_tdgf_loh}, for $\beta = 20$. \label{fig:tdgf_accuracy_loh}}
+\end{figure}
 
 
 \textcolor{blue}{OPT: Mention Hirsch method}\cite{Hirsch1988}

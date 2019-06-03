@@ -99,7 +99,7 @@ Calculate fake "G(τ, 0)", i.e. [B^-N1 + B^N2]^-1
 """
 function calc_tdgf_qr(B, N1, N2; inv_sum_method = inv_sum)
   if N1 != 0
-    udtl = calc_Bchain_qr(inv(B), N1) # TODO
+    udtl = calc_Bchain_qr(inv(B), N1)[1]
   else
     udtl = udt!(Matrix(I*one(eltype(B)), size(B)))
   end
@@ -117,18 +117,18 @@ end
 """
 Calculate fake "G(τ, 0)", i.e. [B^-N1 + B^N2]^-1
 """
-function calc_tdgf_svd(B, N1, N2; inv_sum_method = inv_sum)
+function calc_tdgf_svd(B, N1, N2; inv_sum_method = inv_sum, svdalg = svd!)
   if N1 != 0
-    svdl = calc_Bchain_svd(inv(B), N1) # TODO
+    svdl = calc_Bchain_svd(inv(B), N1)[1]
   else
-    svdl = svd!(Matrix(I*one(eltype(B)), size(B)))
+    svdl = svdalg(Matrix(I*one(eltype(B)), size(B)))
   end
 
   if N2 != 0
     svdr = calc_Bchain_svd(B, N2)[1]
   else
-    svdr = svd!(Matrix(I*one(eltype(B)), size(B)))
+    svdr = svdalg(Matrix(I*one(eltype(B)), size(B)))
   end
 
-  inv_sum_method(svdl, svdr)
+  inv_sum_method(svdl, svdr; svdalg = svdalg)
 end
