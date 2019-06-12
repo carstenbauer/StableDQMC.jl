@@ -229,7 +229,7 @@ where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. He
 
 \section{Benchmarks}
 
-In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed, for our free fermion model system, Eq.~\ref{eq:model}.
+In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed. All results are for our free fermion model system, Eq.~\ref{eq:model}.
 
 \subsection{Accuracy}
 
@@ -414,6 +414,19 @@ with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 \textcolor{blue}{OPT: Mention Hirsch method}\cite{Hirsch1988}
 
 
+\section{Discussion}
+
+Numerical instabilities are naturally present in quantum Monte Carlo simulations of many-fermion systems. Different algorithmic schemes and matrix decomposition techniques have been proposed over time to handle the exponential spread of scales in a stable manner. However, as we have shown in this work, they can have vastly different accuracy and efficiency rendering them more or less suited for determinant quantum Monte Carlo simulations.
+
+For our non-interacting model system, we were able to compute the equal-time Green's function and its determinant to floating point precision using the QR-based UDT decomposition and the Jacobi SVD (when combined with the right inversion scheme). Conventional and divide-and-conquer based SVDs consistently failed to produce reliable results, in particular at the lowest considered temperatures, $\beta \sim 40$.
+
+In terms of speed, we find that the QR decomposition outperforms the conventional and Jacobi SVDs by a large margin while only the D\&C SVD variant has similar computational efficiency. Since the inversion scheme in the QR case involves matrix divisions this observed performance difference is not exclusively due to - but dominated by - the computational cheapness of a QR decomposition compared to a SVD.
+
+Our findings clearly suggest the QR decomposition for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions it serves its purpose only when combined with the stable inversion scheme proposed by  ~\citet{Loh1989}
+
+\section{Acknowledgements}
+
+We thank Peter Bröcker and Yoni Schattner for useful discussions on this topic and Frederick Freyer for identifying a few typos in this manuscript.
 
 %\afterpage{\clearpage}
 \clearpage
