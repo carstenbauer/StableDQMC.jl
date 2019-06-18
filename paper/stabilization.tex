@@ -76,29 +76,33 @@ In this manuscript we review how numerical instabilities come about in fermion m
 
 %\tableofcontents
 
+\section{Introduction}
+
+\textcolor{red}{TODO: Why is DQMC relevant? What problems can we tackle with it? Which ones have already been addressed? What are limitations of other methods that DQMC doesn't have?}
+
 \section{Quantum Monte Carlo}
 
-For the description of the determinant quantum Monte Carlo (DQMC) algorithm\cite{Blankenbecler1981}, we consider a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$, which comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
+We begin by recalling the determinant quantum Monte Carlo (DQMC) algorithm\cite{Blankenbecler1981} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$. The latter comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
 interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
 %
 \begin{equation}
 \mathcal{Z} = \int D\left( \psi, \psi^\dagger, \phi \right) e^{-S_B - S_F} \,.
 \end{equation}
 %
-The basic idea is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory as in the path integral framework. The first step is to discretize, $\beta = M \Delta \tau$, and Trotter decompose the imaginary time $\tau$,
+The basic idea of DQMC is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory. The extra finite dimension of the classical theory is imaginary time $\tau$. It has a length proportional to the inverse temperature $\beta = 1/T$ and is discretized into $M$ time slices, $\beta = M \Delta \tau$. Applying a Trotter decomposition\textcolor{red}{CITE} one obtains
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[\exp{\left( -\Delta\tau \sum_{l=1}^M \psi^\dagger \left[T + V_\phi\right] \psi \right)}\right]} \label{eq:discretizedpi} \,.
 \end{align}
 %
-The exponential is then separated and the appearing commutator ignored which results in a systematic error of the order $\mathcal{O}\left(\Delta\tau^2\right)$,
+Next, the exponential is separated which leads to a systematic error of the order $\mathcal{O}\left(\Delta\tau^2\right)$,
 \begin{align}
 	e^{A + B} &\approx e^A e^B \quad \nonumber\\
 	e^{-\Delta\tau (T + V)} &\approx e^{- \frac{\Delta\tau}{2}T} e^{-\Delta\tau V} e^{- \frac{\Delta\tau}{2}T} + \mathcal{O}\left(\Delta\tau^3\right), \nonumber\\
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[ \prod_{l=1}^{m} B_l \right]} + \mathcal{O}\left(\Delta\tau^2\right). \label{eq:Ztr}
 \end{align}
 %
-Note that the potential part $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ in the time-slice propagators $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ depends on the boson $\phi$ due to the present fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \textcolor{red}{CITE}, yields the fundamental form
+Here, $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ are imaginary time slice propagators. Note that their potential contribution $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ depends on the boson $\phi$ due to fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \textcolor{red}{CITE}, yields the fundamental form
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \det{G_\phi^{-1}} + \mathcal{O}\left(\Delta\tau^2\right), \label{eq:DQMC}
@@ -108,13 +112,19 @@ where
 \begin{align}
 	G = \left( \mathbb{1} + B_M B_{M-1} \cdots B_1 \right)^{-1} \label{etgf}
 \end{align}
-is the equal-time Green's function.
+is the equal-time Green's function of the system.
 
-Only under specific circumstances, such as the presence of a symmetry, can the integral kernel be safely interpreted as a probability weight. Generally, $G_\phi$ and its determinant are complex valued - the famous sign problem.
+As per Eq.~\eqref{eq:DQMC}, the probability weight appearing in a Metropolis Monte Carlo scheme reads
+\begin{align}
+p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis},
+\end{align}
+which tells us that, considering a generic update, we need to compute the Green's function $G$ and it's determinant for both the current and the proposed state ($G'$) of the Markov walker. For local updates, however, one can typically avoid those costly calculations and rather compute the ratio of determinants in Eq.~\eqref{eq:metropolis} directly.
+
+Importantly, it is only under specific circumstances, such as the presence of a symmetry, that the integral kernel can be safely interpreted as a probability weight as $G_\phi$ and its determinant are generally complex valued. This is the famous sign problem\textcolor{red}{CITE}.
 
 \section{Numerical instabilities}
 
-We consider the following simple non-interacting model system in one dimension,
+To showcase the typical numerical instabilities arising in the DQMC framework we consider the following simple non-interacting model system in one dimension,
 \begin{align}
 	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + \mu \sum_i n_i \label{eq:model},
 \end{align}
@@ -133,23 +143,21 @@ where we set the hopping amplitude to $t=-1$ and the chemical potential to $\mu=
 %\right].
 %\end{align}
 
-In the DQMC method, we need to compute the equal time Green's function $G$ (Eq.~\ref{etgf}) and it's determinant, which enters into the probability weight (Eq.~$\ref{eq:DQMC}$). Let's make the latter point a bit more precise. In a Metropolis scheme,
-\begin{align}
-p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis}
-\end{align}
-it is actually the ratio of determinants which determines the acceptance or rejection of a proposed (primed $G$) Markov walker step.
 
-We will showcase the issue of numerical instabilities arising in the computation of $G$ by discussing the accuracy of the calculation of the building block of $G$, the slice matrix product chain
+
+As seen from Eq.~\eqref{etgf}, the building block of the equal-time Green's function is the slice matrix product chain
 \begin{align}
 B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
 \end{align}
-Here, the second equality stems from the fact that our model, Eq.~\ref{eq:model}, is non-interacting and the slice matrices $B_l$ do neither depend on the Hubbard-Stratonovich boson field nor explicitly on imaginary time.
+Here, the second equality stems from the absence of interactions in our model, which renders the $B_l$ independent of the Hubbard-Stratonovich field $\phi$ and imaginary time.
 
-In Fig.~\ref{fig:naive_vs_stable} we see that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of how to stabilize the product for the next section, let us understand the origin of this instability. The eigenvalues of the system are given by
+In Fig.~\ref{fig:naive_vs_stable}, we show that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the system are given by
 \begin{align}
 	&\epsilon_k = -2t\cos(k) + \mu.
 \end{align}
-Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. The positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$ and the product chain, Eq.~\ref{eq:Bchain}, has $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$. We therefore see that the condition number diverges at low temperatures $T=1/\beta$. In this case roundoff errors due to finite machine precision will spoil the result. We can estimate the breakdown of the computation for the data type \texttt{Float64}, that is double floating-point precision\cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. We find $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures.
+Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. Hence, a single positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$, which gives $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$ for  the product chain $B(\tau, 0)$. This implies that the scales present in $B(\tau, 0)$ broaden exponentially at low temperatures $T=1/\beta$ and roundoff errors due to finite machine precision will spoil a naive computation. We can estimate the inverse temperature of this breakdown of the calculation for the data type \texttt{Float64}, that is double floating-point precision\cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. This gives $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures, in accordance with expectations.
+
+Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obtained from a naive computation are generally not invertible and the inversion in Eq.~\ref{etgf} is ill defined. This clearly prohibits a safe calculation of the equal-time Green's function and asks for more sophisticated techniques.
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{figures/naive_vs_stable.pdf}
@@ -163,24 +171,25 @@ Neglecting the contribution by the chemical potential for simplicity, the energy
 
 \section{\label{sec:stabilization}Stabilization schemes}
 
-A trivial solution to the issue outlined above is arbitrary precision numerics. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
+A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
 
-How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is to keep different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A way to realize this is by deploying matrix decompositions, which we write generally as
+How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is simply to keep the broadly different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A reliable tool along these lines are matrix decompositions, which we write generally as
 \begin{align}
 	B = UDX.
 \end{align}
-Here, $U$ and $X$ are matrices containing scales of the order of unity and $D$ is a real diagonal matrix having all the scales of $B$ separated on the diagonal. We will refer to the values in $D$ as singular values for all particular decompositions.
+Here, $U$ and $X$ are matrices containing scales of the order of unity and $D$ is a real diagonal matrix with the broad range of scales of $B$ separated on the diagonal. In what follows, we will refer to the values in $D$ as singular values independent of the particular decomposition.
 
-Instead of calculating the matrix product $B_2 B_1$ directly, we safely compute (\texttt{fact\_mult} in \texttt{StableDQMC.jl})
+Instead of calculating a matrix product $B_2 B_1$ directly, we safely compute (\texttt{fact\_mult} in \texttt{StableDQMC.jl})
 
 \begin{align}
 B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
 &= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\
 &= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales contained in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure for the full slice matrix product chain, Eq.~\ref{eq:Bchain}, we obtain an accurate $UDX$ decomposition of the result.\footnote{Note that we intentionally do not discuss the option to calculate $B^M$ as $U D^M X$ since typically the system will be interacting and the $B$ matrices in the product chain will differ.} \textcolor{red}{TODO: Mention safe mult}
+with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales present in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure, we obtain a numerically accurate $UDX$ decomposition of the full slice matrix product chain $B(\tau, 0)$.\footnote{Note that we do not discuss the option to calculate $B^M$ as $U D^M X$. This is intentional since most real systems will involve fermion-boson interactions and the slice matrices will depend on $\phi(\tau)$.} We note in passing that in a practical DQMC implementation it is often unnecessary to stabilize every single matrix product but. Instead one typically performs a mixture of naive and stabilized products for the sake of speed while still retaining numerical accuracy\cite{Assaad2002a}.
 
 \subsection{Equal-time Green's function}
+\textcolor{blue}{POINTER}
 Looking at the equal-time Green's function in Eq.~\ref{etgf}, we have to be careful to keep scales separated in the inversion of $1 + B(\beta, 0)$ as well. In fact, small singular values of the order of unity in $B(\beta, 0)$ would even be washed away just by naively adding the identity matrix alone. Fortunately, these issues can be circumvented as well.
 
 A straightforward procedure (\texttt{inv\_one\_plus} in \texttt{StableDQMC.jl}) to add the unit matrix and perform the inversion in a stabilized manner is given by\cite{Santos2003, Assaad2002a}
