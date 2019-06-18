@@ -6,8 +6,8 @@ Pkg.activate(".")
 using Revise, StableDQMC, GenericSVD, JacobiSVD, LinearAlgebra, Plots, Statistics, LaTeXStrings, DataStructures
 using BenchmarkTools, StatsPlots, DataFrames
 
-pyplot();
-PyPlot.plt.style.use("publication_tex")
+gr();
+#PyPlot.plt.style.use("publication_tex")
 default(
     framestyle = :grid,
     grid = true,
@@ -298,19 +298,19 @@ function benchmark_decomps(; evals=3)
     return df
 end
 
-df_decomps = benchmark_decomps()
+#df_decomps = benchmark_decomps()
 
-@df df_decomps plot(:N, [:gesvd ./ :qr, :gesdd ./ :qr, :gesvj ./ :qr],
-            marker=true,
-            color=permutedims(["#008837", "#5E3C99", "#FDB863"]),
-            label=permutedims(["SVD", "SVD (D\\&C)", "SVD (Jacobi)"]),
-#             yscale=:log10
-            ylims=(0,29)
-           )
-@df df_decomps plot!(:N, fill(1, length(:N)), color=:grey, linestyle=:dash, label="QR")
-xlabel!(L"N of $N\times N$ square matrix")
-ylabel!("slowdown factor rel. to QR")
-savefig("../paper/figures/benchmark_decomps_mkl.pdf")
+#@df df_decomps plot(:N, [:gesvd ./ :qr, :gesdd ./ :qr, :gesvj ./ :qr],
+#            marker=true,
+#            color=permutedims(["#008837", "#5E3C99", "#FDB863"]),
+#            label=permutedims(["SVD", "SVD (D\\&C)", "SVD (Jacobi)"]),
+##             yscale=:log10
+#            ylims=(0,29)
+#           )
+#@df df_decomps plot!(:N, fill(1, length(:N)), color=:grey, linestyle=:dash, label="QR")
+#xlabel!(L"N of $N\times N$ square matrix")
+#ylabel!("slowdown factor rel. to QR")
+#savefig("../paper/figures/benchmark_decomps_mkl.pdf")
 
 function benchmark_inv_one_plus(; evals=3)
     Ns = Int.(range(100, 500, step=100))
@@ -331,19 +331,19 @@ function benchmark_inv_one_plus(; evals=3)
     return df
 end
 
-df_greens = benchmark_inv_one_plus(evals=1)
+#df_greens = benchmark_inv_one_plus(evals=1)
 
-@df df_greens plot(:N, [:gesvd ./ :qr, :gesdd ./ :qr, :gesvj ./ :qr],
-            marker=true,
-            color=permutedims(["#008837", "#5E3C99", "#FDB863"]), # #E66101 for QR
-            label=permutedims(["SVD", "SVD (D\\&C)", "SVD (Jacobi)"]),
-#             yscale=:log10
-#             ylims=(0,50)
-           )
-@df df_greens plot!(:N, fill(1, length(:N)), color=:grey, linestyle=:dash, label="QR")
-xlabel!(L"number of sites $N$")
-ylabel!("slowdown factor rel. to QR")
-savefig("../paper/figures/benchmark_fact_inv_one_plus_mkl.pdf")
+#@df df_greens plot(:N, [:gesvd ./ :qr, :gesdd ./ :qr, :gesvj ./ :qr],
+#            marker=true,
+#            color=permutedims(["#008837", "#5E3C99", "#FDB863"]), # #E66101 for QR
+#            label=permutedims(["SVD", "SVD (D\\&C)", "SVD (Jacobi)"]),
+##             yscale=:log10
+##             ylims=(0,50)
+#           )
+#@df df_greens plot!(:N, fill(1, length(:N)), color=:grey, linestyle=:dash, label="QR")
+#xlabel!(L"number of sites $N$")
+#ylabel!("slowdown factor rel. to QR")
+#savefig("../paper/figures/benchmark_fact_inv_one_plus_mkl.pdf")
 
 function benchmark_inv_one_plus_loh(; evals=3)
     Ns = Int.(range(100, 500, step=100))
@@ -364,19 +364,19 @@ function benchmark_inv_one_plus_loh(; evals=3)
     return df
 end
 
-df_loh = benchmark_inv_one_plus_loh()
+#df_loh = benchmark_inv_one_plus_loh()
 
-@df df_loh plot(:N, [:gesvd ./ :qr, :gesdd ./ :qr, :gesvj ./ :qr],
-            marker=true,
-            color=permutedims(["#008837", "#5E3C99", "#FDB863"]), # #E66101 for QR
-            label=permutedims(["SVD", "SVD (D\\&C)", "SVD (Jacobi)"]),
-#             yscale=:log10
-#             ylims=(0,50)
-           )
-@df df_loh plot!(:N, fill(1, length(:N)), color=:grey, linestyle=:dash, label="QR")
-xlabel!(L"number of sites $N$")
-ylabel!("slowdown factor rel. to QR")
-savefig("../paper/figures/benchmark_fact_inv_one_plus_loh_mkl.pdf")
+#@df df_loh plot(:N, [:gesvd ./ :qr, :gesdd ./ :qr, :gesvj ./ :qr],
+#            marker=true,
+#            color=permutedims(["#008837", "#5E3C99", "#FDB863"]), # #E66101 for QR
+#            label=permutedims(["SVD", "SVD (D\\&C)", "SVD (Jacobi)"]),
+##             yscale=:log10
+##             ylims=(0,50)
+#           )
+#@df df_loh plot!(:N, fill(1, length(:N)), color=:grey, linestyle=:dash, label="QR")
+#xlabel!(L"number of sites $N$")
+#ylabel!("slowdown factor rel. to QR")
+#savefig("../paper/figures/benchmark_fact_inv_one_plus_loh_mkl.pdf")
 
 # G(slice, 1) = [B(slice, 1)^-1 + B(beta, slice)]^-1
 function accuracy_tdgf(B; loh = false) 
