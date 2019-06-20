@@ -177,17 +177,17 @@ Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obt
 	\caption{\textbf{Numerical instabilities} due to finite machine precision (\texttt{Double64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
-\section{\label{sec:stabilization}Stabilization of matrix products}
+\section{\label{sec:stabilization}Stabilization}
 
-A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
+A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia this can be done by using the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
 
-How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is to keep the broadly different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A reliable tool along these lines are matrix decompositions, which we write generally as
+How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is to keep the broadly different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A useful tool along these lines are matrix decompositions,
 \begin{align}
 	B = UDX. \label{eq:decomp}
 \end{align}
-Here, $U$ and $X$ are matrices containing scales of the order of unity and $D$ is a real diagonal matrix with the broad range of scales of $B$ separated on the diagonal. In what follows, we will refer to the values in $D$ as singular values independent of the particular decomposition.
+Here, $U$ and $X$ are matrices containing scales of the order of unity and $D$ is a real diagonal matrix with the broad range of scales of $B$ separated on the diagonal. We will refer to the values in $D$ as singular values independent of the particular decomposition.
 
-Instead of calculating matrix products $B_2 B_1$ appearing in $B(\tau, 0)$, Eq.~\ref{eq:Bchain}, directly, we utilize Eq.~\ref{eq:decomp} to define a stable matrix multiplication as (\texttt{fact\_mult} in \texttt{StableDQMC.jl})
+Instead of calculating products $B_2 B_1$ appearing in $B(\tau, 0)$, Eq.~\ref{eq:Bchain}, directly, we utilize Eq.~\ref{eq:decomp} to define a stable matrix multiplication (\texttt{fact\_mult} in \texttt{StableDQMC.jl})
 
 \begin{align}
 B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
