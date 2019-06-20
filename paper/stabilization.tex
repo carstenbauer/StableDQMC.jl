@@ -59,7 +59,7 @@ longbibliography,
 
 \begin{document}
 
-\title{Fast and stable determinant quantum Monte Carlo in Julia}% Force line breaks with \\
+\title{Fast and stable determinant quantum Monte Carlo}% Force line breaks with \\
 
 \author{Carsten Bauer}
 \affiliation{Institute for Theoretical Physics, University of Cologne, 50937 Cologne, Germany}
@@ -78,11 +78,19 @@ In this manuscript we review how numerical instabilities come about in fermion m
 
 \section{Introduction}
 
-\textcolor{red}{TODO: Why is DQMC relevant? What problems can we tackle with it? Which ones have already been addressed? What are limitations of other methods that DQMC doesn't have?}
 
-\section{Quantum Monte Carlo}
+Many-fermion systems play an important role in condensed matter physics. Due to their intrinsic correlations they feature rich phase diagrams which can not be captured by purely classical nor non-interacting theories. Especially at the lowest temperatures, quantum mechanical fluctuations driven by Heisenberg's uncertainty principle become relevant and lead to novel states of matter like superconductivity or ones beyond the Fermi liquid paradigm. Because of the presence of interactions, predicting microscopic and thermodynamic properties of fermion many-body systems is inherently difficult. Analytical approaches are typically doomed to fail in cases where one can not rely on the smallness of an expansion parameter.
 
-We begin by recalling the determinant quantum Monte Carlo (DQMC) algorithm\cite{Blankenbecler1981} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$. The latter comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
+Fortunately, the determinant quantum Monte Carlo (DQMC) method overcomes this limitation. The key feature of DQMC is that it is numerically exact - given sufficient computation time the systematical error is arbitrarily small. Provided the absence of the famous sign-problem, it allows us to efficiently explore the relevant region of the exponentially large configuration space in polynomial time. It is an important unbiased technique for obtaining reliable insights into the physics of many-fermion systems.
+
+Although conceptually straightforward, care has to be taken in implementing DQMC due to inherent numerical instabilities. It is the purpose of this work to review stabilization schemes to heal those algebraic issues and to compare them with respect to accuracy and speed.
+ Specifically, the structure of the paper is as follows. We start by providing a brief introduction into the DQMC method in Sec.~\ref{sec:QMC}. In Sec.~\ref{sec:instabilities} we illustrate numerical instabilities arising in the DQMC formalism and recall their origin. Following this, we present (Sec.~\ref{sec:stabilization}) and benchmark (Sec.~\ref{sec:benchmarks}) different numerical stabilization schemes in the context of the computation of the equal-times Green's function and its determinant. Lastly, we turn to the calculation of the time-displaced Green's function in Sec.~\ref{sec:TDGF} before concluding and summarizing in Sec.~\ref{sec:discussion}.
+ 
+We provide implementations of all discussed algorithms, as well as the code to recreate all the plots of this manuscript, in form of the Julia package \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+
+\section{Quantum Monte Carlo}\label{sec:QMC}
+
+We begin by recalling the determinant - or auxiliary field - quantum Monte Carlo (DQMC) algorithm\cite{Blankenbecler1981} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$. The latter comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
 interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
 %
 \begin{equation}
@@ -122,7 +130,7 @@ which tells us that, considering a generic update, we need to compute the Green'
 
 Importantly, it is only under specific circumstances, such as the presence of a symmetry, that the integral kernel can be safely interpreted as a probability weight as $G_\phi$ and its determinant are generally complex valued. This is the famous sign problem\textcolor{red}{CITE}.
 
-\section{Numerical instabilities}
+\section{Numerical instabilities}\label{sec:instabilities}
 
 To showcase the typical numerical instabilities arising in the DQMC framework we consider the following simple non-interacting model system in one dimension,
 \begin{align}
@@ -149,7 +157,7 @@ As seen from Eq.~\eqref{etgf}, the building block of the equal-time Green's func
 \begin{align}
 B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
 \end{align}
-Here, the second equality stems from the absence of interactions in our model, which renders the $B_l$ independent of the Hubbard-Stratonovich field $\phi$ and imaginary time.
+Here, the second equality stems from the absence of interactions in our specific model, which renders the $B_l$ independent of the Hubbard-Stratonovich field $\phi$ and imaginary time.
 
 In Fig.~\ref{fig:naive_vs_stable}, we show that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the system are given by
 \begin{align}
@@ -169,24 +177,24 @@ Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obt
 	\caption{\textbf{Numerical instabilities} due to finite machine precision (\texttt{Double64}) in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. \label{fig:naive_vs_stable_db64}}
 \end{figure}
 
-\section{\label{sec:stabilization}Stabilization schemes}
+\section{\label{sec:stabilization}Stabilization of matrix products}
 
 A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia the latter is provided through the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
 
-How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is simply to keep the broadly different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A reliable tool along these lines are matrix decompositions, which we write generally as
+How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is to keep the broadly different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A reliable tool along these lines are matrix decompositions, which we write generally as
 \begin{align}
-	B = UDX.
+	B = UDX. \label{eq:decomp}
 \end{align}
 Here, $U$ and $X$ are matrices containing scales of the order of unity and $D$ is a real diagonal matrix with the broad range of scales of $B$ separated on the diagonal. In what follows, we will refer to the values in $D$ as singular values independent of the particular decomposition.
 
-Instead of calculating a matrix product $B_2 B_1$ directly, we safely compute (\texttt{fact\_mult} in \texttt{StableDQMC.jl})
+Instead of calculating matrix products $B_2 B_1$ appearing in $B(\tau, 0)$, Eq.~\ref{eq:Bchain}, directly, we utilize Eq.~\ref{eq:decomp} to define a stable matrix multiplication as (\texttt{fact\_mult} in \texttt{StableDQMC.jl})
 
 \begin{align}
 B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
 &= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\
-&= U_r D_r X_r, \nonumber
+&= U_r D_r X_r. \nonumber
 \end{align}
-with $U_r = U_2 U'$, $D_r = D'$, and $X_r = X' X_1$. Here, brackets indicate the order of operations. If we follow this scheme, largely different scales present in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure, we obtain a numerically accurate $UDX$ decomposition of the full slice matrix product chain $B(\tau, 0)$.\footnote{Note that we do not discuss the option to calculate $B^M$ as $U D^M X$. This is intentional since most real systems will involve fermion-boson interactions and the slice matrices will depend on $\phi(\tau)$.} We note in passing that in a practical DQMC implementation it is often unnecessary to stabilize every single matrix product but. Instead one typically performs a mixture of naive and stabilized products for the sake of speed while still retaining numerical accuracy\cite{Assaad2002a}.
+Here, $U_r = U_2 U'$, $D_r = D'$, $X_r = X' X_1$, and $U'D'X'$ indicates an intermediate matrix decomposition. If we follow this scheme, in which parentheses indicate the order of operations, largely different scales present in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure, we obtain a numerically accurate $UDX$ decomposition of the full slice matrix product chain $B(\tau, 0)$.\footnote{Note that we do not discuss the option to calculate $B^M$ as $U D^M X$. This is intentional since most real systems will involve fermion-boson interactions and the slice matrices will depend on $\phi(\tau)$.} We note in passing that in a practical DQMC implementation it is often unnecessary to stabilize every single matrix product but. Instead one typically performs a mixture of naive and stabilized products for the sake of speed while still retaining numerical accuracy\cite{Assaad2002a}.
 
 \subsection{Equal-time Green's function}
 \textcolor{blue}{POINTER}
@@ -236,7 +244,7 @@ B = QR = UDT,
 \end{align}
 where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}. Analogously, a decomposition into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
 
-\section{Benchmarks}
+\section{Benchmarks}\label{sec:benchmarks}
 
 In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed. All results are for our free fermion model system, Eq.~\ref{eq:model}.
 
@@ -364,7 +372,7 @@ The most costly part of the Green's function calculation are the matrix decompos
 
 
 %\afterpage{\clearpage}
-\section{Time-displaced Green's function}
+\section{Time-displaced Green's function}\label{sec:TDGF}
 We generalize our definition of the equal times Green's function, Eq.~\ref{etgf}, to include the imaginary time $\tau = l \Delta \tau$ dependence,
 \begin{align}
 G(\tau) = \langle c_{i} c_{j}^\dagger \rangle_{\phi_l} = \left( 1 + B_{l-1}\dots B_1 B_M \dots B_l \right)^{-1}.
@@ -423,7 +431,7 @@ with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 \textcolor{blue}{OPT: Mention Hirsch method}\cite{Hirsch1988}
 
 
-\section{Discussion}
+\section{Discussion}\label{sec:discussion}
 
 Numerical instabilities are naturally present in quantum Monte Carlo simulations of many-fermion systems. Different algorithmic schemes and matrix decomposition techniques have been proposed over time to handle the exponential spread of scales in a stable manner. However, as we have shown in this work, they can have vastly different accuracy and efficiency rendering them more or less suited for determinant quantum Monte Carlo simulations.
 
@@ -435,7 +443,7 @@ Our findings clearly suggest the QR decomposition for DQMC simulations as it is 
 
 \section{Acknowledgements}
 
-We thank Peter Bröcker and Yoni Schattner for useful discussions on this topic and Frederick Freyer for identifying a few typos in this manuscript.
+We thank Peter Bröcker, Yoni Schattner, and Simon Trebst for useful discussions and Frederick Freyer for identifying a few typos in this manuscript. %The numerical simulations were performed on the JUWELS cluster at FZ Juelich and the CHEOPS cluster at RRZK Cologne.
 
 %\afterpage{\clearpage}
 \clearpage
