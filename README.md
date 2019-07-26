@@ -1,4 +1,4 @@
-![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
+![](https://img.shields.io/badge/lifecycle-stable-orange.svg)
 [![travis][travis-img]](https://travis-ci.org/crstnbr/StableDQMC.jl)
 [![appveyor][appveyor-img]](https://ci.appveyor.com/project/crstnbr/stabledqmc-jl/branch/master)
 [![codecov][codecov-img]](http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master)
