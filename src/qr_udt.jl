@@ -72,7 +72,7 @@ end
 
 @inline function _qr_to_udt(A::AbstractMatrix{C}, F::QRPivoted) where {C<:Number}
     n = size(A, 1)
-    D = Vector{real(C)}(undef, n)
+    D = Vector{real(float(C))}(undef, n)
     R = F.R # F.R has regular matrix type
     @views F.p[F.p] = 1:n
 

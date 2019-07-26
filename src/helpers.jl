@@ -25,7 +25,7 @@ Returns the result `R` and the singular values (column of `svs`) of all intermed
 function calc_Bchain(B, N)
     bs = size(B,1)
     R = Matrix{eltype(B)}(I, bs, bs)
-    svs = zeros(eltype(B), N,bs)
+    svs = zeros(Float64, N,bs)
     svc = 1
     for k in 1:N
         R = B * R
@@ -41,7 +41,7 @@ Same as `calc_Bchain` but stabilizes the
 matrix products by intermediate matrix decompositions.
 """
 function calc_Bchain_svd(B, N; svdalg = svd)
-    svs = zeros(eltype(B), N,size(B,1))
+    svs = zeros(Float64, N,size(B,1))
     F = svdalg(B)
     U, S, Vt = F.U, F.S, F.Vt
     svs[1,:] = log.(S)
@@ -71,7 +71,7 @@ Same as `calc_Bchain` but stabilizes the
 matrix products by intermediate matrix decompositions.
 """
 function calc_Bchain_qr(B, N)
-    svs = zeros(eltype(B), N,size(B,1))
+    svs = zeros(Float64, N,size(B,1))
     U, D, T = udt(B)
     svs[1,:] = log.(D)
     svc = 2

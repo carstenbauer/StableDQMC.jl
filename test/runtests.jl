@@ -139,4 +139,45 @@ using Test, Random, LinearAlgebra
         end
     end
 
+
+
+    @testset "Helpers" begin
+        x = [1 2; 3 4]
+        @test cond(svdvals(x)) ≈ cond(x)
+
+        R, svs = calc_Bchain(x, 5)
+        @test R ≈ x^5
+        for i in 1:5
+            @test svs[i,:] ≈ log.(svdvals(x^i))
+        end
+
+
+        # SVD / UDV
+        R, svs = calc_Bchain_svd(x, 5)
+        xsvd = svd(x^5)
+        @test R.U ≈ xsvd.U
+        @test R.S ≈ xsvd.S
+        @test R.Vt ≈ xsvd.Vt
+        for i in 1:5
+            @test svs[i,:] ≈ log.(svdvals(x^i))
+        end
+
+
+        # QR / UDT
+        R, svs = calc_Bchain_qr(x, 5)
+        xudt = udt(x^5)
+        @test R.U ≈ xudt.U
+        @test R.D ≈ xudt.D
+        @test R.T ≈ xudt.T
+        for i in 1:5
+            @test svs[i,:] ≈ log.(udt(x^i).D)
+        end
+
+
+        g = calc_tdgf_qr(x,2,3)
+        @test g ≈ inv(x^-2 + x^3) # [B^-N1 + B^N2]^-1
+        g = calc_tdgf_svd(x,2,3)
+        @test g ≈ inv(x^-2 + x^3) # [B^-N1 + B^N2]^-1
+    end
+
 end
