@@ -165,10 +165,6 @@ Optional preallocations via keyword arguments:
   * `t = similar(F.T)`
 """
 function udt_inv_one_plus(F::UDT; u = similar(F.U), t = similar(F.T))
-  # @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
-  # d = mc.s.d
-  # u = mc.s.tmp
-  # t = mc.s.tmp2
   U, D, T = F
 
   m = U' / T
@@ -191,10 +187,6 @@ function inv_one_plus!(res, F::UDT;
                        u = similar(F.U),
                        d = similar(F.D),
                        t = similar(F.T))
-  # @warn "Calling potentially inaccurate `inv_one_plus_udt!`"
-  # d = mc.s.d
-  # u = mc.s.tmp
-  # t = mc.s.tmp2
   U, D, T = F
 
   m = U' / T
@@ -259,10 +251,6 @@ function udt_inv_one_plus(A::UDT, Bdagger::UDT;
                           tmp2 = similar(A.U),
                           tmp3 = similar(A.U),
                           internaluse = false)
-  # s = mc.s
-  # tmp = mc.s.tmp
-  # tmp2 = mc.s.tmp2
-  # tmp3 = mc.s.curr_U
   Ul,Dl,Tl = A
   Ur,Dr,Tr = Bdagger
 
