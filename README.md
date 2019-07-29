@@ -33,7 +33,7 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
   </tr>
 </table>
 
-Note that "SVD (D&C)" is the algorithm used in Julia's `svd` function.
+Note that "SVD (D&C)" is the algorithm used by Julia's `svd` function.
 
 ### Decompositions
 
