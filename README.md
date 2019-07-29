@@ -24,6 +24,15 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 ] add https://github.com/crstnbr/StableDQMC.jl
 ```
 
+### Why should I care?
+
+<table>
+  <tr>
+    <td><img src="paper/figures/naive_vs_stable.png" width=500px></td>
+    <td><img src="paper/figures/decomp_comparison_simple.png" width=500px></td>
+  </tr>
+</table>
+
 ### Decompositions
 
 Based on the QR decomposition, we introduce a `UDT` factorization, where `U` is unitary, `D` is real-valued and diagonal, and `T` is upper-triangular. To decompose a given matrix `M` the `udt` function is exported.
