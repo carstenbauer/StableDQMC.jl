@@ -33,6 +33,8 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
   </tr>
 </table>
 
+Note that "SVD (D&C)" is the algorithm used in Julia's `svd` function.
+
 ### Decompositions
 
 Based on the QR decomposition, we introduce a `UDT` factorization, where `U` is unitary, `D` is real-valued and diagonal, and `T` is upper-triangular. To decompose a given matrix `M` the `udt` function is exported.
