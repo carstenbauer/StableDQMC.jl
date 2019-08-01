@@ -1,3 +1,5 @@
+# StableDQMC.jl
+
 ![](https://img.shields.io/badge/lifecycle-stable-blue.svg)
 [![travis][travis-img]](https://travis-ci.org/crstnbr/StableDQMC.jl)
 [![appveyor][appveyor-img]](https://ci.appveyor.com/project/crstnbr/stabledqmc-jl/branch/master)
@@ -13,7 +15,7 @@
 
 This is a small collection of linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo) in a numerically stabilized manner.
 
-For more details, check out the (unfinished!) accompanyig [paper](https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/stabilization.pdf), in which we describe and benchmark a few specific algorithms.
+For more details, check out the (unfinished!) accompanyig [paper](https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/stabilization.pdf), in which we describe and benchmark a few specific algorithms. The plots in the paper have been generated with the notebooks in [the notebook directory](https://github.com/crstnbr/StableDQMC.jl/tree/master/notebooks) of this repository.
 
 Feel free to give feedback, open issues, or contribute useful algorithms yourself! 🙂
 
@@ -24,6 +26,17 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 ```
 
 The package only has one dependency, Requires.jl.
+
+### Why should I care?
+
+<table>
+  <tr>
+    <td><img src="paper/figures/naive_vs_stable.png" width=500px></td>
+    <td><img src="paper/figures/decomp_comparison_simple.png" width=500px></td>
+  </tr>
+</table>
+
+Note that "SVD (D&C)" is the algorithm used by Julia's `svd` function.
 
 ### Inversions
 
@@ -125,4 +138,3 @@ julia> import JacobiSVD # using might lead to name conflicts
 julia> gesvj # gesvj and gesvj! are available now
 gesvj (generic function with 1 method)
 ```
-
