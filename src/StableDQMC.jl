@@ -1,7 +1,7 @@
 module StableDQMC
 
-using LinearAlgebra
-using GenericSVD, JacobiSVD
+using LinearAlgebra, Pkg
+using Requires
 
 include("helpers.jl")
 include("qr_udt.jl")
@@ -40,10 +40,6 @@ export gesdd!
 export gesdd
 export gesvd!
 export gesvd
-export genericsvd!
-export genericsvd
-export gesvj!
-export gesvj
 
 export svd_inv_one_plus
 export inv_one_plus!
@@ -62,6 +58,23 @@ export inv_sum_loh!
 export inv_sum_loh
 
 
+# Optional JacobiSVD + GenericSVD
+function addJacobiSVD()
+    pkg"add https://github.com/RalphAS/JacobiSVD.jl"
+    @eval import JacobiSVD
+end
+rmJacobiSVD() = pkg"rm JacobiSVD"
+
+function addGenericSVD()
+    pkg"add GenericSVD"
+    @eval import GenericSVD
+end
+rmGenericSVD() = pkg"rm GenericSVD"
+
+function __init__()
+    @require JacobiSVD="2ca068c6-2156-5cf0-8317-c67edf277a2c" include("svd_jacobi.jl")
+    @require GenericSVD="01680d73-4ee2-5a08-a1aa-533608c188bb" include("svd_generic.jl")
+end
 
 
 end # module

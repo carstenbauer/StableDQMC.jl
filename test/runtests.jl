@@ -3,8 +3,16 @@ using Test, Random, LinearAlgebra
 
 
 
-
 @testset "StableDQMC.jl" begin
+
+    @testset "Opt-in JacobiSVD/GenericSVD" begin
+        @test_throws UndefVarError gesvj
+        @test_throws UndefVarError gesvj!
+        @test_throws UndefVarError genericsvd
+        @test_throws UndefVarError genericsvd!
+        StableDQMC.addJacobiSVD()
+        StableDQMC.addGenericSVD()
+    end
 
     @testset "UDT Type" begin
         Random.seed!(1234)
