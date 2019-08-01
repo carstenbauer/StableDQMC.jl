@@ -1,3 +1,5 @@
+# StableDQMC.jl
+
 ![](https://img.shields.io/badge/lifecycle-stable-blue.svg)
 [![travis][travis-img]](https://travis-ci.org/crstnbr/StableDQMC.jl)
 [![appveyor][appveyor-img]](https://ci.appveyor.com/project/crstnbr/stabledqmc-jl/branch/master)
