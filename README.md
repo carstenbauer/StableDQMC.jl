@@ -36,6 +36,8 @@ The package only has one dependency, Requires.jl.
   </tr>
 </table>
 
+**Left:** Slice matrix product. **Right:** Equal-times Green's function.
+
 Note that "SVD (D&C)" is the algorithm used by Julia's `svd` function.
 
 ### Inversions
