@@ -22,7 +22,7 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 ### Installation
 
 ```
-] add https://github.com/crstnbr/StableDQMC.jl
+] add StableDQMC
 ```
 
 The package only has one dependency, Requires.jl.
