@@ -45,22 +45,6 @@ function fact_mult(A::SVD, B::SVD)
 end
 
 
-# """
-#     *(A::SVD, B::SVD)
-
-# Stabilized multiplication of two SVD decompositions.
-
-# (Type piracy if `LinearAlgebra` defines `*` for `SVD`s in the future!)
-# """
-# function Base.:*(A::SVD, B::SVD)
-#     mat = A.Vt * B.U
-#     lmul!(Diagonal(A.S), mat)
-#     rmul!(mat, Diagonal(B.S))
-#     F = svd!(mat)
-#     (A.U * F.U) * Diagonal(F.S) * (F.Vt * B.Vt)
-# end
-
-
 
 
 
@@ -174,7 +158,7 @@ function svd_inv_one_plus_loh(F::SVD;
   Sp .= max.(S, 1)
   Sm .= min.(S, 1)
 
-  Sp .\= 1 # Sp now Spinv!!!
+  Sp .\= 1 # Sp now Spinv
 
   rmul!(l, Diagonal(Sp))
   rmul!(r, Diagonal(Sm))
