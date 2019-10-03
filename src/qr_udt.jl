@@ -1,4 +1,4 @@
-# UDT decomposition (basically QR)
+# UDT decomposition (QR decomposition with U = Q and DT = R)
 struct UDT{E,Er<:Real,M<:AbstractArray{E}} <: Factorization{E}
     U::M
     D::Vector{Er}
@@ -128,20 +128,6 @@ function fact_mult(A::UDT, B::UDT)
     F = udt!(mat)
     UDT(A.U * F.U, F.D, F.T * B.T)
 end
-
-
-# """
-#     *(A::UDT, B::UDT)
-
-# Stabilized multiplication of two `UDT` decompositions.
-# """
-# function Base.:*(A::UDT, B::UDT)
-#     mat = A.T * B.U
-#     lmul!(Diagonal(A.D), mat)
-#     rmul!(mat, Diagonal(B.D))
-#     F = udt!(mat)
-#     (A.U * F.U) * Diagonal(F.D) * (F.T * B.T)
-# end
 
 
 
