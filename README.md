@@ -2,15 +2,11 @@
 
 ![](https://img.shields.io/badge/lifecycle-stable-blue.svg)
 [![github-ci](https://github.com/crstnbr/StableDQMC.jl/workflows/Run%20tests/badge.svg)](https://github.com/crstnbr/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22)
-[![travis][travis-img]](https://travis-ci.org/crstnbr/StableDQMC.jl)
-[![appveyor][appveyor-img]](https://ci.appveyor.com/project/crstnbr/stabledqmc-jl/branch/master)
 [![codecov][codecov-img]](http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master)
 [![](https://img.shields.io/badge/chat-on%20slack-yellow.svg)](https://slackinvite.julialang.org/)
 [![license: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 <!-- [![coveralls][coveralls-img]](https://coveralls.io/github/crstnbr/BinningAnalysis.jl?branch=master) !-->
 
-[travis-img]: https://img.shields.io/travis/crstnbr/StableDQMC.jl/master.svg?label=linux
-[appveyor-img]: https://img.shields.io/appveyor/ci/crstnbr/stabledqmc-jl/master.svg?label=windows
 [codecov-img]: https://img.shields.io/codecov/c/github/crstnbr/StableDQMC.jl/master.svg?label=codecov
 [coveralls-img]: https://img.shields.io/coveralls/github/crstnbr/StableDQMC.jl/master.svg?label=coverage
 
