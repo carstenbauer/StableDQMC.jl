@@ -1,7 +1,7 @@
 # StableDQMC.jl
 
 ![](https://img.shields.io/badge/lifecycle-stable-blue.svg)
-[![ci](https://github.com/crstnbr/StableDQMC.jl/workflows/Run%20tests/badge.svg)](https://github.com/crstnbr/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22)
+[![github-ci](https://github.com/crstnbr/StableDQMC.jl/workflows/Run%20tests/badge.svg)](https://github.com/crstnbr/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22)
 [![travis][travis-img]](https://travis-ci.org/crstnbr/StableDQMC.jl)
 [![appveyor][appveyor-img]](https://ci.appveyor.com/project/crstnbr/stabledqmc-jl/branch/master)
 [![codecov][codecov-img]](http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master)
