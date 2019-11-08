@@ -26,6 +26,9 @@ using Test, Random, LinearAlgebra
 
         @test u * u' ≈ I # unitarity of u
         @test isreal(d)
+        @static if VERSION < v"1.1.0-DEV.792"
+            eachcol(A::AbstractMatrix) = (view(A, :, i) for i in axes(A, 2))
+        end
         @test sort!(count.(iszero,eachcol(t))) == 0:9 # triangularity of t (istriu(t) == false due to pivoting)
         @test Matrix(F) ≈ x
         @test u * Diagonal(d) * t ≈ x
