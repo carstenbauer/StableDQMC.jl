@@ -1,5 +1,7 @@
 # StableDQMC.jl
 
+> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
+
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
 | [![][docs-dev-img]][docs-dev-url] | ![][lifecycle-img] [![][github-ci-img]][github-ci-url] [![][codecov-img]][codecov-url] | [![][slack-img]][slack-url] [![][license-img]][license-url] |
