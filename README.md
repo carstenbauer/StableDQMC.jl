@@ -1,14 +1,22 @@
 # StableDQMC.jl
 
-![](https://img.shields.io/badge/lifecycle-stable-blue.svg)
-[![github-ci](https://github.com/crstnbr/StableDQMC.jl/workflows/Run%20tests/badge.svg)](https://github.com/crstnbr/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22)
-[![codecov][codecov-img]](http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master)
-[![](https://img.shields.io/badge/chat-on%20slack-yellow.svg)](https://slackinvite.julialang.org/)
-[![license: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
-<!-- [![coveralls][coveralls-img]](https://coveralls.io/github/crstnbr/BinningAnalysis.jl?branch=master) !-->
+| **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| [![][docs-dev-img]][docs-dev-url] | ![][lifecycle-img] [![][github-ci-img]][github-ci-url] [![][codecov-img]][codecov-url] | [![][slack-img]][slack-url] [![][license-img]][license-url] |
 
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://crstnbr.github.io/StableDQMC.jl/dev
+[github-ci-img]: https://github.com/crstnbr/StableDQMC.jl/workflows/Run%20tests/badge.svg
+[github-ci-url]: https://github.com/crstnbr/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22
 [codecov-img]: https://img.shields.io/codecov/c/github/crstnbr/StableDQMC.jl/master.svg?label=codecov
-[coveralls-img]: https://img.shields.io/coveralls/github/crstnbr/StableDQMC.jl/master.svg?label=coverage
+[codecov-url]: http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master
+
+[slack-url]: https://slackinvite.julialang.org/
+[slack-img]: https://img.shields.io/badge/chat-on%20slack-yellow.svg
+[license-img]: https://img.shields.io/badge/License-MIT-red.svg
+[license-url]: https://opensource.org/licenses/MIT
+
+[lifecycle-img]: https://img.shields.io/badge/lifecycle-stable-blue.svg
 
 This is a small collection of linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo) in a numerically stabilized manner.
 
