@@ -68,7 +68,7 @@ longbibliography,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-In this manuscript we review numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we discuss the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, when calculating equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes that have been proposed to gain control over computations. Besides numerical accuracy we also investigate the computational efficiency of the different stabilization methods. Concretely, we use the Julia programming language and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}. Overall, we find that a QR decomposition based scheme is best suited for DQMC and superior to SVD based approaches, both in terms of accuracy and speed.
+In this manuscript we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, when calculating equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes that have been proposed to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. Concretely, we use the Julia programming language and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}. Overall, we find that a scheme based on QR decompositions typically outperforms SVD approaches, both in terms of accuracy and speed.
 \end{abstract}
 
 
@@ -441,7 +441,7 @@ For our non-interacting model system, we were able to compute the equal-time Gre
 
 In terms of speed, we find that the QR decomposition outperforms the conventional and Jacobi SVDs by a large margin while only the D\&C SVD variant has similar computational efficiency. Since the inversion scheme in the QR case involves matrix divisions this observed performance difference is not exclusively due to - but dominated by - the computational cheapness of a QR decomposition compared to a SVD.
 
-Our findings clearly suggest the QR decomposition for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions it serves its purpose only when combined with the stable inversion scheme proposed by  ~\citet{Loh1989}
+Our findings clearly suggest the QR decomposition for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions, the accuray strongly depends on the chosen inversion scheme. Among the ones considered in this manuscript, only the algorithm by  ~\citet{Loh1989} could produce reliable results.
 
 \section{Acknowledgements}
 
