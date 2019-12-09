@@ -9,6 +9,6 @@ export genericsvd
 Same as `genericsvd` but saves space by overwriting the input matrix.
 """
 function genericsvd!(x)
-  GenericSVD.svd!(x)
+  GenericSVD.svd!(x; alg=nothing)
 end
 export genericsvd!

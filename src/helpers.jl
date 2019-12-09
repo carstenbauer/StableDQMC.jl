@@ -55,12 +55,12 @@ function calc_Bchain_svd(B, N; svdalg = svd)
         M = svdalg(U)
         U, S, Vtnew = M.U, M.S, M.Vt
         Vt = Vtnew * Vt
-        
+
         # keep singular values
         svs[svc,:] = log.(S)
         svc += 1
     end
-    
+
     return SVD(U, S, Vt), svs
 end
 
@@ -83,12 +83,12 @@ function calc_Bchain_qr(B, N)
         U *= Diagonal(D)
         U, D, Tnew = udt(U)
         T = Tnew * T
-        
+
         # keep singular values
         svs[svc,:] = log.(D)
         svc += 1
     end
-    
+
     return UDT(U, D, T), svs
 end
 
@@ -117,18 +117,19 @@ end
 """
 Calculate fake "G(τ, 0)", i.e. [B^-N1 + B^N2]^-1
 """
-function calc_tdgf_svd(B, N1, N2; inv_sum_method = inv_sum, svdalg = svd!)
+function calc_tdgf_svd(B, N1, N2; inv_sum_method = inv_sum, svdalg_inv = svd!, svdalg_chain = svd)
+  # svdalg_nonmutating = Symbol(replace(string(nameof(svdalg)), "!" => ""))
   if N1 != 0
-    svdl = calc_Bchain_svd(inv(B), N1)[1]
+    svdl = calc_Bchain_svd(inv(B), N1; svdalg = svdalg_chain)[1]
   else
     svdl = svdalg(Matrix(I*one(eltype(B)), size(B)))
   end
 
   if N2 != 0
-    svdr = calc_Bchain_svd(B, N2)[1]
+    svdr = calc_Bchain_svd(B, N2; svdalg = svdalg_chain)[1]
   else
     svdr = svdalg(Matrix(I*one(eltype(B)), size(B)))
   end
 
-  inv_sum_method(svdl, svdr; svdalg = svdalg)
+  inv_sum_method(svdl, svdr; svdalg = svdalg_inv)
 end

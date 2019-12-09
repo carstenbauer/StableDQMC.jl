@@ -68,7 +68,7 @@ longbibliography,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-In this manuscript we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, when calculating equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes that have been proposed to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. Concretely, we use the Julia programming language and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}. Overall, we find that a scheme based on QR decompositions typically outperforms SVD approaches, both in terms of accuracy and speed.
+In these notes we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, when calculating equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes that have been proposed to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. We identify a scheme based on QR decompositions that is both stable and fast and well suited for DQMC applications. Among the considered SVD decompositions, only the Jacobi SVD does consistently deliver accurate results, while being orders of magnitude slower than the QR alternative. We use the Julia programming language for our assessment and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 \end{abstract}
 
 
@@ -86,7 +86,7 @@ Fortunately, the determinant quantum Monte Carlo (DQMC) method overcomes this li
 Although conceptually straightforward, care has to be taken in implementing DQMC due to inherent numerical instabilities. It is the purpose of this work to review stabilization schemes to heal those algebraic issues and to compare them with respect to accuracy and speed.
  Specifically, the structure of the paper is as follows. We start by providing a brief introduction into the DQMC method in Sec.~\ref{sec:QMC}. In Sec.~\ref{sec:instabilities} we illustrate numerical instabilities arising in the DQMC formalism and recall their origin. Following this, we present (Sec.~\ref{sec:stabilization}) and benchmark (Sec.~\ref{sec:benchmarks}) different numerical stabilization schemes in the context of the computation of the equal-times Green's function and its determinant. Lastly, we turn to the calculation of the time-displaced Green's function in Sec.~\ref{sec:TDGF} before concluding and summarizing in Sec.~\ref{sec:discussion}.
  
-We provide implementations of all discussed algorithms, as well as the code to recreate all the plots of this manuscript, in form of the Julia package \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+We provide implementations of all discussed algorithms, as well as the code to recreate all the plots of these notes, in form of the Julia package \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 
 \section{Quantum Monte Carlo}\label{sec:QMC}
 
@@ -132,11 +132,11 @@ Importantly, it is only under specific circumstances, such as the presence of a 
 
 \section{Numerical instabilities}\label{sec:instabilities}
 
-To showcase the typical numerical instabilities arising in the DQMC framework we consider the following simple non-interacting model system in one dimension,
+To showcase the typical numerical instabilities arising in the DQMC framework we consider the Hubbard model in one dimension at half filling,
 \begin{align}
-	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + \mu \sum_i n_i \label{eq:model},
+	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + U \sum_i \left( n_{i\uparrow} - \frac{1}{2} \right) \left( n_{i\downarrow} - \frac{1}{2} \right) \label{eq:model},
 \end{align}
-where we set the hopping amplitude to $t=-1$ and the chemical potential to $\mu=-0.1$.
+and set the hopping amplitude to unity, $t=1$.
 %\begin{align}
 %H = \left[
 %\begin{array}{cccccccc}
@@ -157,13 +157,13 @@ As seen from Eq.~\eqref{etgf}, the building block of the equal-time Green's func
 \begin{align}
 B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
 \end{align}
-Here, the second equality stems from the absence of interactions in our specific model, which renders the $B_l$ independent of the Hubbard-Stratonovich field $\phi$ and imaginary time.
+where in the second equality  we have assumed that the slice matrices are independent of imaginary time to simplify our numerical analysis.
 
-In Fig.~\ref{fig:naive_vs_stable}, we show that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the system are given by
+First, we consider the non-interacting system, $U=0$. In Fig.~\ref{fig:naive_vs_stable}, we show that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the system are given by
 \begin{align}
-	&\epsilon_k = -2t\cos(k) + \mu.
+	&\epsilon_k = -2t\cos(k).
 \end{align}
-Neglecting the contribution by the chemical potential for simplicity, the energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. Hence, a single positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$, which gives $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$ for  the product chain $B(\tau, 0)$. This implies that the scales present in $B(\tau, 0)$ broaden exponentially at low temperatures $T=1/\beta$ and roundoff errors due to finite machine precision will spoil a naive computation. We can estimate the inverse temperature of this breakdown of the calculation for the data type \texttt{Float64}, that is double floating-point precision \cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. This gives $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures, in accordance with expectations.
+The energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. Hence, a single positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$, which gives $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$ for  the product chain $B(\tau, 0)$. This implies that the scales present in $B(\tau, 0)$ broaden exponentially at low temperatures $T=1/\beta$ and roundoff errors due to finite machine precision will spoil a naive computation. We can estimate the inverse temperature of this breakdown of the calculation for the data type \texttt{Float64}, that is double floating-point precision \cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. This gives $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the non-IEEE data type \texttt{Double64}, we see in Fig.~\ref{fig:naive_vs_stable_db64} that the onset of roundoff errors is shifted to lower temperatures, in accordance with expectations.
 
 Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obtained from a naive computation are generally not invertible and the inversion in Eq.~\ref{etgf} is ill defined. This clearly prohibits a safe calculation of the equal-time Green's function and asks for more sophisticated techniques.
 
@@ -245,7 +245,7 @@ where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. He
 
 \section{Benchmarks}\label{sec:benchmarks}
 
-In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed. All results are for our free fermion model system, Eq.~\ref{eq:model}.
+In the following we want to assess how the mentioned matrix decompositions perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed. All results are for the Hubbard model, Eq.~\ref{eq:model}, with $U=0$ and $U=1$ (alpha transparent in all plots)
 
 \subsection{Accuracy}
 
@@ -258,28 +258,28 @@ Before benchmarking the efficiency of an algorithm, it is crucial to check it's 
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_greens_svd_regularinv.pdf}
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\eqref{eq:inversion}. \label{fig:greens_accuracy_regularinv}}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\eqref{eq:inversion}. Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent).  \label{fig:greens_accuracy_regularinv}}
 \end{figure}
 
 \begin{figure}[t]
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_greens_svd_loh.pdf}
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:greens_accuracy_loh}}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the careful inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}.  Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent).\label{fig:greens_accuracy_loh}}
 \end{figure}
 
-Turning to the equal-time Green's function, Eq.~\ref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition reproduces $G_{\textrm{exact}}$ reliably. It has the highest accuracy by a large margin, followed by the Jacobi SVD as the best of the SVD methods, which all fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does improve the accuracy of the Jacobi SVD dramatically while the deviations seen for the other two SVD based schemes are still of order unity.
+Turning to the equal-time Green's function, Eq.~\ref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures and for $U=0$, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition and the Jacobi SVD reproduce $G_{\textrm{exact}}$ reliably. They have the highest accuracy by a large margin, followed by the other SVD variants, which  fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does generally improve the accuracy but the deviations seen for the regular and D\&C SVD schemes are still of order unity at low temperatures.
 \begin{figure}
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_det_svd_regularinv.pdf}
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}. Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent). \label{fig:det_accuracy_regularinv}}
 \end{figure}
 
 \begin{figure}
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_det_svd_loh.pdf}
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}. \label{fig:det_accuracy_loh}}
+	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}. Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent).\label{fig:det_accuracy_loh}}
 \end{figure}
 
 In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_loh} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance\footnote{For local updates on can generally avoid full calculations of Green's function determinants by exploiting locality and performing a Laplace expansion since only ratios of determinants appear in Eq.~\ref{eq:metropolis}. In fact, in an optimal implementation the computation of the acceptance rate is $O(1)$ rather than $O(N^3)$.}, obtained for all combinations of matrix decompositions and inversion schemes. Both the QR decomposition and the Jacobi SVD lead to accurate results for all accessed temperatures, irrespective of the employed inversion scheme. The other two SVD based methods on the other hand show large relative deviations for both \texttt{inv\_one\_plus} and \texttt{inv\_one\_plus\_loh}.
 
-These findings suggest that only the QR decomposition, independent of the inversion procedure, or the Jacobi SVD in combination with the more careful inversion scheme \texttt{inv\_one\_plus\_loh} is suited for computing both the equal time Green's function and it's determinant reliably.
+These findings suggest that only the QR decomposition and the Jacobi SVD are suited for computing both the equal time Green's function and it's determinant reliably, irrespective of the inversion procedure.
 
 %\begin{table}[b]
 %	\bgroup
@@ -368,7 +368,7 @@ Since the decompositions represent the performance bottleneck, we expect that th
 
 \begin{figure}
 	\includegraphics[width=0.45\textwidth]{figures/benchmark_fact_inv_one_plus_loh.pdf}
-	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\eqref{eq:inversion_loh}. \label{fig:greens_benchmark_loh}}
+	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\eqref{eq:inversion_loh}. Shown are results for $U=0$. \label{fig:greens_benchmark_loh}}
 \end{figure}
 
 
@@ -420,32 +420,36 @@ We note in passing that \citet{Hirsch1988} has proposed an alternative method fo
 \subsection{Accuracy}
 
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf.pdf}
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf_U0.pdf}
 	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum}, Eq.~\eqref{eq:inversion_tdgf}, for $\beta = 40$. \label{fig:tdgf_accuracy_regularinv}}
 \end{figure}
 
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf_loh.pdf}
-	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum\_loh}, Eq.~\eqref{eq:inversion_tdgf_loh}, for $\beta = 40$. All SVD curves lie on top of each other. \label{fig:tdgf_accuracy_loh}}
+	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf_loh_U0.pdf}
+	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum\_loh}, Eq.~\eqref{eq:inversion_tdgf_loh}, for $\beta = 40$. Shown are results for $U=0$. \label{fig:tdgf_accuracy_loh}}
 \end{figure}
-In Fig.~\ref{fig:tdgf_accuracy_regularinv}, we show the logarithmic maximal deviation of the time-displaced Green's function as calculated using the regular inversion scheme \texttt{inv\_sum} from the exact Green's function as a function of the time-displacement $\tau$ at inverse temperature $\beta=40$. Clearly, all singular value decomposition variants fail to capture the intrinsic scales sufficiently and errors much beyond floating point precision are seen. Although the QR decomposition systematically leads to equally or more accurate values for all considered imaginary times, it fails to be reliable at long times $\tau\sim\beta/2$ (recall that the Green's function is anti-periodic in $\tau$).
+In Fig.~\ref{fig:tdgf_accuracy_regularinv}, we show the logarithmic maximal deviation of the time-displaced Green's function as calculated using the regular inversion scheme \texttt{inv\_sum} from the exact Green's function as a function of the time-displacement $\tau$ at inverse temperature $\beta=40$. Clearly, both non-Jacobi SVDs fail to capture the intrinsic scales sufficiently and errors much beyond floating point precision are seen. Although the QR decomposition systematically leads to equally or more accurate values for all considered imaginary times, it fails to be reliable at long times $\tau\sim\beta/2$ (recall that the Green's function is anti-periodic in $\tau$). Only the Jacobi SVD delivers reliable results for all considered imaginary times.
 
-Switching to the inversion scheme \texttt{inv\_sum\_loh}, this picture changes, as can be seen in Fig.~\ref{fig:tdgf_accuracy_loh}. While the SVDs show similar (insufficient) accuracy as when deployed in combination with \texttt{inv\_sum}, using the QR decomposition leads to stable Green's function estimates up to floating point precision across the entire imaginary time axis. This suggests that the QR decomposition consistently outperforms the singular value decompositions, similar to our findings for the equal-time Green's function, and is to be preferred in a DQMC context.
+When switching to the inversion scheme \texttt{inv\_sum\_loh}, this picture changes, as can be seen in Fig.~\ref{fig:tdgf_accuracy_loh}. While the non-Jacobi SVDs show similar (insufficient) accuracy as when deployed in combination with \texttt{inv\_sum}, using the QR decomposition leads to stable Green's function estimates up to floating point precision across the entire imaginary time axis. Similar to our findings for the equal-time Green's function, this suggests that only the Jacobi SVD and the QR decomposition, when paired with the appropriate inversion procedure, are reliable in a DQMC context.
 
+\subsection{Efficiency}\label{sec:tdgfbenchmark}
+\textcolor{red}{TODO: Benchmark section where we compare Jacobi SVD + simple inversion vs QR + loh inversion.}
 
 \section{Discussion}\label{sec:discussion}
 
 Numerical instabilities are naturally present in quantum Monte Carlo simulations of many-fermion systems. Different algorithmic schemes and matrix decomposition techniques have been proposed over time to handle the exponential spread of scales in a stable manner. However, as we have shown in this review, they can have vastly different accuracy and efficiency rendering them more or less suited for determinant quantum Monte Carlo simulations.
 
-For our non-interacting model system, we were able to compute the equal-time Green's function and its determinant to floating point precision using the QR-based UDT decomposition and the Jacobi SVD (when combined with the right inversion scheme). Conventional and divide-and-conquer based SVDs consistently failed to produce reliable results, in particular at the lowest considered temperatures, $\beta \sim 40$.
+For the considered one-dimensional Hubbard model, we were able to compute the equal-time Green's function and its determinant to floating point precision using the QR-based UDT decomposition and the Jacobi SVD. In case of the time-displaced Green's function, the QR had to be combined with the inversion algorithm suggested by ~\citet{Loh1989} while the Jacobi SVD was accurate irrespective of the inversion scheme. Conventional and divide-and-conquer based SVDs consistently failed to produce reliable results in both cases, in particular at the lowest considered temperatures, $\beta \sim 40$.
 
 In terms of speed, we find that the QR decomposition outperforms the conventional and Jacobi SVDs by a large margin while only the D\&C SVD variant has similar computational efficiency. Since the inversion scheme in the QR case involves matrix divisions this observed performance difference is not exclusively due to - but dominated by - the computational cheapness of a QR decomposition compared to a SVD.
 
-Our findings clearly suggest the QR decomposition for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions, the accuray strongly depends on the chosen inversion scheme. Among the ones considered in this manuscript, only the algorithm by  ~\citet{Loh1989} could produce reliable results.
+In summary, our assessment suggests that the QR decomposition is the best choice for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions, the accuray strongly depends on the chosen inversion scheme. Among the ones considered in these notes, only the algorithm by  ~\citet{Loh1989} could produce reliable results. The Jacobi SVD, although computationally much more expensive, proved to be a stable alternative.
+
+Finally, let us remark that the performance of all stabilization schemes is affected by the condition number of the time slice matrices and is therefore model (parameter) dependent. While we have not investigated this dependence in systematic detail,  we nonetheless think that our major conclusions bear some universality and will hopefully serve as a useful guide, 
 
 \section{Acknowledgements}
 
-We thank Peter Bröcker, Yoni Schattner, and Simon Trebst for useful discussions and Frederick Freyer for identifying a few typos in this manuscript. %The numerical simulations were performed on the JUWELS cluster at FZ Juelich and the CHEOPS cluster at RRZK Cologne.
+We thank Peter Bröcker, Yoni Schattner, Snir Gazit, and Simon Trebst for useful discussions and Frederick Freyer for identifying a few typos in this manuscript. %The numerical simulations were performed on the JUWELS cluster at FZ Juelich and the CHEOPS cluster at RRZK Cologne.
 
 %\afterpage{\clearpage}
 \clearpage
