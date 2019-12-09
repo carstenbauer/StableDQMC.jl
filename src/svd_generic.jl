@@ -8,7 +8,10 @@ export genericsvd
 """
 Same as `genericsvd` but saves space by overwriting the input matrix.
 """
-function genericsvd!(x)
+function genericsvd!(x::AbstractArray{T}) where {T<:Union{BigFloat, BigInt}}
   GenericSVD.svd!(x; alg=nothing)
+end
+function genericsvd!(x::AbstractArray)
+  GenericSVD.svd!(x)
 end
 export genericsvd!

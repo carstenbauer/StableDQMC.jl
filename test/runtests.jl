@@ -1,7 +1,7 @@
 using StableDQMC
 using Test, Random, LinearAlgebra
 
-
+Base.eps(::Type{Complex{Float64}}) = eps(Float64)
 
 @testset "StableDQMC.jl" begin
 
