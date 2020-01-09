@@ -20,7 +20,7 @@
 
 [lifecycle-img]: https://img.shields.io/badge/lifecycle-stable-blue.svg
 
-This is a library of linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo) in a numerically stabilized manner.
+This is a library of numerically stable linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo).
 
 For more details, check out the (unfinished!) accompanyig [notes](https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/stabilization.pdf), in which we describe and benchmark a few specific algorithms. The plots in the notes have been generated with the notebooks in [the notebook directory](https://github.com/crstnbr/StableDQMC.jl/tree/master/notebooks) of this repository.
 
