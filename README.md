@@ -32,7 +32,7 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 ] add StableDQMC
 ```
 
-The package only has one dependency, Requires.jl.
+The package has only one dependency, Requires.jl.
 
 ### Why should I care?
 
