@@ -19,8 +19,8 @@ The package has only one dependency, Requires.jl.
 ```@raw html
 <table>
   <tr>
-    <td><img src="paper/figures/naive_vs_stable.png" width=500px></td>
-    <td><img src="paper/figures/decomp_comparison_simple.png" width=500px></td>
+    <td><img src="https://github.com/crstnbr/StableDQMC.jl/tree/master/paper/figures/naive_vs_stable.png" width=500px></td>
+    <td><img src="https://github.com/crstnbr/StableDQMC.jl/tree/master/paper/figures/decomp_comparison_simple.png" width=500px></td>
   </tr>
 </table>
 ```
