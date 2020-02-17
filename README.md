@@ -5,9 +5,8 @@
 </div>
 
 <h2 align="center">StableDQMC.jl</h2>
+<h4 align="center">Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman</h4>
 <br>
-
-> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
 
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
