@@ -14,21 +14,6 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 
 The package has only one dependency, Requires.jl.
 
-## Why should I care?
-
-```@raw html
-<table>
-  <tr>
-    <td><img src="https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/figures/naive_vs_stable.png" width=500px></td>
-    <td><img src="https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/figures/decomp_comparison_simple.png" width=500px></td>
-  </tr>
-</table>
-```
-
-**Left:** Slice matrix product. **Right:** Equal-times Green's function.
-
-Note that "SVD (D&C)" is the algorithm used by Julia's `svd` function.
-
 ## Getting started
 
 ```julia
@@ -47,3 +32,18 @@ Since the matrix `B` is well-conditioned in this case, we have
 julia> G ≈ inv(I + B)
 true
 ```
+
+## Why should I care?
+
+```@raw html
+<table>
+  <tr>
+    <td><img src="https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/figures/naive_vs_stable.png" width=500px></td>
+    <td><img src="https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/figures/decomp_comparison_simple.png" width=500px></td>
+  </tr>
+</table>
+```
+
+**Left:** Slice matrix product. **Right:** Equal-times Green's function.
+
+Note that "SVD (D&C)" is the algorithm used by Julia's `svd` function.
