@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://crstnbr.github.io/StableDQMC.jl/dev">
-    <img src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo.png" alt="StableDQMC.jl" width="300">
+    <img src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo_large.png" alt="StableDQMC.jl" width="400">
   </a>
 </div>
 
