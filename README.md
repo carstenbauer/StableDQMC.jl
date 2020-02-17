@@ -4,11 +4,8 @@
   </a>
 </div>
 
-<h2 align="center">StableDQMC.jl:</h2>
-<h4 align="center">Numerical stabilization routines for determinant quantum Monte Carlo</h4>
-<p align="center">
-  
-</p>
+<h2 align="center">StableDQMC.jl</h2>
+<h4 align="center">Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman</h4>
 <br>
 
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
@@ -31,8 +28,6 @@
 [license-url]: https://opensource.org/licenses/MIT
 
 [lifecycle-img]: https://img.shields.io/badge/lifecycle-stable-blue.svg
-
-> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
 
 This is a library of numerically stable linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo).
 
