@@ -1,6 +1,6 @@
 # Matrix Decompositions
 
-### UDT (QR) Decomposition
+### UDT (QR) factorization
 
 Based on the QR decomposition, we introduce a `UDT` factorization, where `U` is unitary, `D` is real-valued and diagonal, and `T` is upper-triangular. To decompose a given matrix `M` the `udt` function is exported.
 
@@ -13,7 +13,7 @@ UDT{Float64,Float64,Array{Float64,2}}([-0.246588 0.12668 … 0.582208 0.206435; 
 
 In our tests (see `paper/`), this decomposition turns out to be superior to `SVD` for DQMC.
 
-### SVD Decompositions
+### SVD factorization
 
 The package provides convenient access to several LAPACK algorithms for calculating singular value decompositions (SVDs):
 
