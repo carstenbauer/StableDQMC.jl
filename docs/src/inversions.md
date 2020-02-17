@@ -1,6 +1,14 @@
 # Stable Inversions
 
-In DQMC, we commonly perform inversions like `G = [1 + B]^-1` to obtain the equal-times Green's function and `G = [A + B]^-1` for the time-displaced pendant. The following methods are exported to facilitate these tasks.
+In DQMC, to obtain the equal-times Green's function we commonly perform the inversion
+
+$$G = \left[1 + B\right]^{-1}.$$
+
+Similarily, we compute
+
+$$G = \left[A + B\right]^{-1}$$
+
+for the time-displaced Green's function. The following methods are exported to facilitate these tasks.
 
 - `inv_one_plus`, `inv_one_plus!`
 - `inv_sum`, `inv_sum!`
