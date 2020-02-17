@@ -1,6 +1,6 @@
 # Matrix Decompositions
 
-### UDT (QR) factorization
+## UDT (QR) factorization
 
 Based on the QR decomposition, we introduce a `UDT` factorization, where `U` is unitary, `D` is real-valued and diagonal, and `T` is upper-triangular. To decompose a given matrix `M` the `udt` function is exported.
 
@@ -13,7 +13,7 @@ UDT{Float64,Float64,Array{Float64,2}}([-0.246588 0.12668 … 0.582208 0.206435; 
 
 In our tests (see `paper/`), this decomposition turns out to be superior to `SVD` for DQMC.
 
-### SVD factorization
+## SVD factorization
 
 The package provides convenient access to several LAPACK algorithms for calculating singular value decompositions (SVDs):
 
@@ -27,7 +27,7 @@ Furthermore, you can access a type-generic, pure Julia implementation,
 
 However, to keep the dependencies of the package minimal, only the first two are available by default and loading of the Jacobi or type-generic SVD is opt-in. We provide convenience functions `StableDQMC.addJacobiSVD()` and `StableDQMC.addGenericSVD()` to facilitate this process. See below for a quick demonstration.
 
-####  Automagically opt-in to JacobiSVD/GenericSVD
+###  Automagically opt-in to JacobiSVD/GenericSVD
 
 ```julia
 julia> using StableDQMC
@@ -57,7 +57,7 @@ gesvj (generic function with 1 method)
 
 ```
 
-#### Manual opt-in
+### Manual opt-in
 
 Provided that you have [JacobiSVD.jl](https://github.com/RalphAS/JacobiSVD.jl) (or [GenericSVD.jl](https://github.com/JuliaLinearAlgebra/GenericSVD.jl)) installed, you can get the LAPACK access functions `gesvj`, `gesvj!` (or `genericsvd`, `genericsvd!`) simply by `import JacobiSVD` (`import GenericSVD`).
 
