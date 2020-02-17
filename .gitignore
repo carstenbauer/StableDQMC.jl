@@ -26,3 +26,6 @@ test/benchmark/*.json
 *.out
 *.synctex.gz
 **/.ipynb_checkpoints
+docs/build/
+docs/site/
+/Manifest.toml

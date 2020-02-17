@@ -59,7 +59,7 @@ longbibliography,
 
 \begin{document}
 
-\title{Fast and stable determinant quantum Monte Carlo}% Force line breaks with \\
+\title{StableDQMC.jl: Fast and stable determinant quantum Monte Carlo}% Force line breaks with \\
 
 \author{Carsten Bauer}
 \affiliation{Institute for Theoretical Physics, University of Cologne, 50937 Cologne, Germany}
@@ -68,7 +68,7 @@ longbibliography,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-In these notes we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, when calculating equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes that have been proposed to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. We identify a scheme based on QR decompositions that is both stable and fast and well suited for DQMC applications. Among the considered SVD decompositions, only the Jacobi SVD does consistently deliver accurate results, while being orders of magnitude slower than the QR alternative. We use the Julia programming language for our assessment and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+In these notes we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, arising in the calculation of equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. We identify a scheme based on QR decompositions which is both stable and fast and therefore well suited for DQMC applications. Compared to approaches relying on singular value decompositions we find that our QR is superior. We use the Julia programming language for our assessment and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 \end{abstract}
 
 
@@ -97,7 +97,7 @@ interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratono
 \mathcal{Z} = \int D\left( \psi, \psi^\dagger, \phi \right) e^{-S_B - S_F} \,.
 \end{equation}
 %
-The basic idea of DQMC is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory. The extra finite dimension of the classical theory is imaginary time $\tau$. It has a length proportional to the inverse temperature $\beta = 1/T$ and is discretized into $M$ time slices, $\beta = M \Delta \tau$. Applying a Trotter decomposition\textcolor{red}{CITE} one obtains
+The basic idea of DQMC is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory. The extra finite dimension of the classical theory is imaginary time $\tau$. It has a length proportional to the inverse temperature $\beta = 1/T$ and is discretized into $M$ time slices, $\beta = M \Delta \tau$. Applying a Trotter-Suzuki decomposition \cite{Trotter1959, Suzuki1986} one obtains
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[\exp{\left( -\Delta\tau \sum_{l=1}^M \psi^\dagger \left[T + V_\phi\right] \psi \right)}\right]} \label{eq:discretizedpi} \,.
