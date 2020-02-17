@@ -1,8 +1,14 @@
-<img align="right" src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo.png">
+<div align="center">
+  <a href="https://crstnbr.github.io/StableDQMC.jl/dev">
+    <img src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo.png" alt="StableDQMC.jl" width="300">
+  </a>
+</div>
 
-# StableDQMC.jl
-
-> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
+<h2 align="center">StableDQMC.jl
+<p align="center">
+  <blockquote>Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman</blockquote>
+</p>
+</h2>
 
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
