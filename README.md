@@ -5,7 +5,6 @@
 </div>
 
 <h2 align="center">StableDQMC.jl:</h2>
-<br>
 <h4 align="center">Numerical stabilization routines for determinant quantum Monte Carlo</h4>
 <p align="center">
   
