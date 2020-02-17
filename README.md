@@ -11,8 +11,6 @@
 </p>
 <br>
 
-> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
-
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
 | [![][docs-dev-img]][docs-dev-url] | ![][lifecycle-img] [![][github-ci-img]][github-ci-url] [![][codecov-img]][codecov-url] [![][pkgeval-img]][pkgeval-url] | [![][slack-img]][slack-url] [![][license-img]][license-url] |
@@ -33,6 +31,8 @@
 [license-url]: https://opensource.org/licenses/MIT
 
 [lifecycle-img]: https://img.shields.io/badge/lifecycle-stable-blue.svg
+
+> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
 
 This is a library of numerically stable linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo).
 
