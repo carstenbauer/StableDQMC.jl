@@ -5,7 +5,7 @@ makedocs(
     doctest = false,
     sitename = "StableDQMC.jl",
     pages = [
-        "Introduction" => "index.md",
+        "Home" => "index.md",
     ],
     # assets = ["assets/custom.css", "assets/custom.js"]
 )

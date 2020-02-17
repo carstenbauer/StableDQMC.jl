@@ -1,6 +1,4 @@
-# StableDQMC.jl
-
-> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
+# Introduction
 
 This is a library of numerically stable linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo).
 
@@ -18,12 +16,14 @@ The package has only one dependency, Requires.jl.
 
 ### Why should I care?
 
+```@raw html
 <table>
   <tr>
     <td><img src="paper/figures/naive_vs_stable.png" width=500px></td>
     <td><img src="paper/figures/decomp_comparison_simple.png" width=500px></td>
   </tr>
 </table>
+```
 
 **Left:** Slice matrix product. **Right:** Equal-times Green's function.
 
