@@ -6,7 +6,7 @@ For more details, check out the (unfinished!) accompanyig [notes](https://github
 
 Feel free to give feedback, open issues, or contribute useful algorithms yourself! 🙂
 
-### Installation
+## Installation
 
 ```
 ] add StableDQMC
@@ -14,7 +14,7 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 
 The package has only one dependency, Requires.jl.
 
-### Why should I care?
+## Why should I care?
 
 ```@raw html
 <table>
@@ -29,10 +29,10 @@ The package has only one dependency, Requires.jl.
 
 Note that "SVD (D&C)" is the algorithm used by Julia's `svd` function.
 
-### Short example
+## Getting started
 
 ```julia
-julia> using LinearAlgebra
+julia> using LinearAlgebra, StableDQMC
 
 julia> B = rand(ComplexF64, 100,100);
 
