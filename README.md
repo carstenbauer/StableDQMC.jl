@@ -1,3 +1,5 @@
+<img align="right" src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo.png">
+
 # StableDQMC.jl
 
 > Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
