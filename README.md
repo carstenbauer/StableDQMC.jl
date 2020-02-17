@@ -4,11 +4,10 @@
   </a>
 </div>
 
-<h2 align="center">StableDQMC.jl
+<h2 align="center">StableDQMC.jl</h2>
 <p align="center">
   <blockquote>Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman</blockquote>
 </p>
-</h2>
 
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
