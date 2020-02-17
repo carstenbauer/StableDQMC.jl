@@ -6,10 +6,11 @@
 
 <h2 align="center">StableDQMC.jl</h2>
 <p align="center">
-  <span>Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman</span>
+  <span>Numerical stabilization routines for determinant quantum Monte Carlo</span>
 </p>
 <br>
 
+> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
 | [![][docs-dev-img]][docs-dev-url] | ![][lifecycle-img] [![][github-ci-img]][github-ci-url] [![][codecov-img]][codecov-url] [![][pkgeval-img]][pkgeval-url] | [![][slack-img]][slack-url] [![][license-img]][license-url] |
