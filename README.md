@@ -4,12 +4,10 @@
   </a>
 </div>
 
-<h2 align="center">StableDQMC.jl:</h2>
-<h4 align="center">Numerical stabilization routines for determinant quantum Monte Carlo</h4>
-<p align="center">
-  
-</p>
+<h2 align="center">StableDQMC.jl</h2>
 <br>
+
+> Nothing brings fear to my heart more than a floating point number. — Gerald Jay Sussman
 
 | **Documentation**                                                               | **Build Status**                                                                                |  **Community**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
