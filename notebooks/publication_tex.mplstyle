@@ -1,0 +1,59 @@
+# LaTeX
+font.family        : serif #sans-serif, also nice, and bold
+#font.serif         : Times, Palatino, New Century Schoolbook, Bookman, Computer Modern Roman
+#font.sans-serif    : Calibri, Helvetica, Avant Garde, Computer Modern Sans serif
+#font.cursive       : Zapf Chancery
+#font.monospace     : Courier, Computer Modern Typewriter
+
+text.usetex        : True
+font.size : 20 # was 20; governs all font sizes (title, label, ticklabels)
+figure.autolayout : True
+figure.figsize   : 8, 5.3   # figure size in inches
+#font.weight : 10
+
+# Sizes
+# axes.titlesize : 30
+axes.labelsize : 21
+axes.linewidth : 1.0 # was 1.3, should be same as tick.major.width
+lines.linewidth : 3
+lines.markersize : 7
+# xtick.labelsize : 24
+# ytick.labelsize : 24
+
+
+# Ticks
+xtick.direction : in
+ytick.direction : in
+xtick.major.pad      : 12      # distance to major tick label in points
+xtick.minor.pad      : 12      # distance to the minor tick label in points
+ytick.major.pad      : 12      # distance to major tick label in points
+ytick.minor.pad      : 12      # distance to the minor tick label in points
+xtick.bottom		 : True
+xtick.top			 : True
+xtick.labelbottom	 : True
+xtick.labeltop		 : False
+ytick.right			 : True
+ytick.labelright	 : False
+xtick.major.width  : 1.0
+ytick.major.width  : 1.0
+xtick.major.size     : 6
+xtick.minor.size     : 4
+ytick.major.size     : 6
+ytick.minor.size     : 4
+
+# Legend
+legend.frameon	: False
+# legend.fontsize : 20
+
+
+scatter.marker		:	o             # The default marker type for scatter plots.
+# lines.markeredgecolor :	k
+errorbar.capsize	:	4             # length of end cap on error bars in pixels
+
+
+
+axes.autolimit_mode : round_numbers
+axes.xmargin: 0.0
+axes.ymargin: 0.0
+# savefig.pad_inches : 1
+savefig.bbox        : tight # 'tight' or 'standard'.

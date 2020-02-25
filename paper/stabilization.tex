@@ -435,6 +435,11 @@ When switching to the inversion scheme \texttt{inv\_sum\_loh}, this picture chan
 \subsection{Efficiency}\label{sec:tdgfbenchmark}
 \textcolor{red}{TODO: Benchmark section where we compare Jacobi SVD + simple inversion vs QR + loh inversion.}
 
+\begin{figure}
+	\includegraphics[width=0.45\textwidth]{figures/benchmark_jacobi_vs_qr_tdgf.pdf}
+	\caption{\textbf{Efficiency of the time-displaced Green's function} obtained from stabilized computations using the QR decomposition in combination with the inversion scheme \texttt{inv\_sum\_loh}, Eq.~\eqref{eq:inversion_tdgf_loh} and the Jacobi SVD paired up with the regular inversion scheme \texttt{inv\_sum}, Eq.~\eqref{eq:inversion_tdgf}. Measurements are taken over multiple runs at $\tau = \beta/2 = 20$. The inset show the slowdown of the Jacobi SVD relative to the QR based approach. \label{fig:tdgf_benchmark}}
+\end{figure}
+
 \section{Discussion}\label{sec:discussion}
 
 Numerical instabilities are naturally present in quantum Monte Carlo simulations of many-fermion systems. Different algorithmic schemes and matrix decomposition techniques have been proposed over time to handle the exponential spread of scales in a stable manner. However, as we have shown in this review, they can have vastly different accuracy and efficiency rendering them more or less suited for determinant quantum Monte Carlo simulations.

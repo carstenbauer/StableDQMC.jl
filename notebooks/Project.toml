@@ -1,8 +1,10 @@
 [deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DoubleFloats = "497a8b3b-efae-58df-a0af-a86822472b78"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 GenericSVD = "01680d73-4ee2-5a08-a1aa-533608c188bb"
 JacobiSVD = "2ca068c6-2156-5cf0-8317-c67edf277a2c"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
