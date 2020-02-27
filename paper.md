@@ -1,5 +1,5 @@
 ---
-title: 'StableDQMC: Fast and stable determinant quantum Monte Carlo in Julia'
+title: 'StableDQMC.jl: A Julia library for fast and stable determinant quantum Monte Carlo'
 tags:
   - Julia
   - physics
