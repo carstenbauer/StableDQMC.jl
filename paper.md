@@ -18,7 +18,7 @@ bibliography: paper.bib
 
 # Introduction
 
-At the heart of condensed matter physics is the desire to gain a solid understanding of interacting many-particle systems, such as magnetic insulators, metals, and superconductors. A powerful
+At the heart of condensed matter physics is the desire to gain a solid understanding of complex interacting many-particle systems, such as topological insulators, metals, and superconductors. Quantum Monte Carlo simulations are a powerful tool for making significant progress in this direction as they allow for a numerically exact and unbiased study of these materials.
 
 It is a Julia [@Bezanson2017] library.
 
