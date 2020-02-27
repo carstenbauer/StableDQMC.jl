@@ -86,7 +86,7 @@ For a quick reference, the following citation commands can be used:
 
 # Figures
 
-Figures can be included like this: ![Example figure.](figure.png)
+<!-- Figures can be included like this: ![Example figure.](figure.png) -->
 
 # Acknowledgements
 
