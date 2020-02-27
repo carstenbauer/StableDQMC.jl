@@ -37,6 +37,8 @@ Feel free to give feedback, open issues, or contribute useful algorithms yoursel
 
 ### Installation
 
+The package is registered in Julia's [General](https://github.com/JuliaRegistries/General) registry. You can install it using
+
 ```
 ] add StableDQMC
 ```
