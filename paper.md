@@ -18,9 +18,9 @@ bibliography: paper.bib
 
 # Introduction
 
-At the heart of condensed matter physics is the desire to gain a solid understanding of complex interacting many-particle systems, such as topological insulators, metals, and superconductors. Quantum Monte Carlo simulations are a powerful tool for making significant progress in this direction as they allow for a numerically exact and unbiased study of these materials. Specifically, the determinant quantum Monte Carlo (DQMC) method [@Blankenbecler1981] has proven [@Schattner2016; @Assaad2016; @Bauer2020] to be effective in the analysis of itinerant electron system featuring strong electronic correlations.
+At the heart of condensed matter physics is the desire to gain a solid understanding of complex interacting many-particle systems, such as topological insulators, unconventional metals, and magnetic materials. Quantum Monte Carlo simulations are a powerful tool for making significant progress in this direction as they, in contrast to analytical approaches, allow for a numerically exact and unbiased study of these materials. In particular, the determinant quantum Monte Carlo (DQMC) method [@Blankenbecler1981] has proven to be effective for the analysis of itinerant electron systems like iron- or copper-based high-temperature superconductors [@Schattner2016; @Assaad2016; @Bauer2020]. However, its application requires careful handling of numerical instabilities which inevitably occur because of an exponentially spread of numerical scales due to the intrinsic energy spectra of such compounds.
 
-It is a Julia [@Bezanson2017] library.
+Although  It is a Julia [@Bezanson2017] library.
 
 # Acknowledgements
 
