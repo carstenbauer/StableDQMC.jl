@@ -36,8 +36,8 @@ showpacs,
  aps,
 % prx,
 %pra,
- prb,
-%rmp,
+% prb,
+rmp,
 %prstab,
 %prstper,
 %floatfix,
@@ -59,7 +59,7 @@ longbibliography,
 
 \begin{document}
 
-\title{StableDQMC.jl: Fast and stable determinant quantum Monte Carlo}% Force line breaks with \\
+\title{Fast and stable determinant quantum Monte Carlo}% Force line breaks with \\
 
 \author{Carsten Bauer}
 \affiliation{Institute for Theoretical Physics, University of Cologne, 50937 Cologne, Germany}
@@ -68,7 +68,7 @@ longbibliography,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-In these notes we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, arising in the calculation of equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. We identify a scheme based on QR decompositions which is both stable and fast and therefore well suited for DQMC applications. Compared to approaches relying on singular value decompositions we find that our QR is superior. We use the Julia programming language for our assessment and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+In these notes we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we review the origin of numerical instabilities in the determinant quantum Monte Carlo (DQMC) framework, arising in the calculation of equal-time and time-displaced Green's functions, and empirically compare various matrix decomposition and inversion schemes to gain control over computations. Besides numerical accuracy we also benchmark the computational efficiency of the different stabilization methods. We identify a scheme based on QR decompositions which is both stable and fast and therefore well suited for DQMC applications. Compared to approaches relying on singular value decompositions we find that the proposed scheme is faster while equally accurate. We use the Julia programming language for our assessment and provide implementations of all discussed techniques in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 \end{abstract}
 
 
@@ -79,18 +79,18 @@ In these notes we assess numerical stabilization methods employed in fermion man
 \section{Introduction}
 
 
-Many-fermion systems play an important role in condensed matter physics. Due to their intrinsic correlations they feature rich phase diagrams which can not be captured by purely classical nor non-interacting theories. Especially at the lowest temperatures, quantum mechanical fluctuations driven by Heisenberg's uncertainty principle become relevant and lead to novel states of matter like superconductivity or ones beyond the Fermi liquid paradigm. Because of the presence of interactions, predicting microscopic and thermodynamic properties of fermion many-body systems is inherently difficult. Analytical approaches are typically doomed to fail in cases where one can not rely on the smallness of an expansion parameter.
+Many-fermion systems play an important role in condensed matter physics. Due to their intrinsic correlations they feature rich phase diagrams which can not be captured by purely classical or non-interacting theories. Especially at the lowest temperatures, quantum mechanical fluctuations driven by Heisenberg's uncertainty principle become relevant and lead to novel states of matter like superconductivity or ones beyond the Fermi liquid paradigm. Because of the presence of interactions, predicting microscopic and thermodynamic properties of fermion many-body systems is inherently difficult. Analytical approaches are typically doomed to fail in cases where one can not rely on the smallness of an expansion parameter.
 
 Fortunately, the determinant quantum Monte Carlo (DQMC) method overcomes this limitation. The key feature of DQMC is that it is numerically exact - given sufficient computation time the systematical error is arbitrarily small. Provided the absence of the famous sign-problem, it allows us to efficiently explore the relevant region of the exponentially large configuration space in polynomial time. It is an important unbiased technique for obtaining reliable insights into the physics of many-fermion systems.
 
-Although conceptually straightforward, care has to be taken in implementing DQMC due to inherent numerical instabilities. It is the purpose of this work to review stabilization schemes to heal those algebraic issues and to compare them with respect to accuracy and speed.
- Specifically, the structure of the paper is as follows. We start by providing a brief introduction into the DQMC method in Sec.~\ref{sec:QMC}. In Sec.~\ref{sec:instabilities} we illustrate numerical instabilities arising in the DQMC formalism and recall their origin. Following this, we present (Sec.~\ref{sec:stabilization}) and benchmark (Sec.~\ref{sec:benchmarks}) different numerical stabilization schemes in the context of the computation of the equal-times Green's function and its determinant. Lastly, we turn to the calculation of the time-displaced Green's function in Sec.~\ref{sec:TDGF} before concluding and summarizing in Sec.~\ref{sec:discussion}.
+Although conceptually straightforward, care has to be taken in implementing DQMC due to inherent numerical instabilities. It is the purpose of these notes to review stabilization schemes to heal those algebraic issues and to compare them with respect to accuracy and speed.
+ Specifically, the structure of this manuscript is as follows. We start by providing a brief introduction into the DQMC method in Sec.~\ref{sec:QMC}. In Sec.~\ref{sec:instabilities} we illustrate numerical instabilities arising in the DQMC formalism and discuss their origin. Following this, we present (Sec.~\ref{sec:stabilization}) and benchmark (Sec.~\ref{sec:benchmarks}) different numerical stabilization schemes in the context of the computation of the equal-times Green's function and its determinant. Lastly, we turn to the calculation of the time-displaced Green's function in Sec.~\ref{sec:TDGF} before concluding and summarizing in Sec.~\ref{sec:discussion}.
  
-We provide implementations of all discussed algorithms, as well as the code to recreate all the plots of these notes, in form of the Julia package \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+In the spirit of reproducible science, we provide implementations of all discussed algorithms, as well as the code to recreate all the plots of these notes, in form of the Julia package \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}. This library is also intended to serve as an important abstraction layer: users can focus on the physical application rather than numerical instabilities. Readers are invited to open issues or pull requests at the repository to discuss the present or add new stabilization routines.
 
 \section{Quantum Monte Carlo}\label{sec:QMC}
 
-We begin by recalling the determinant - or auxiliary field - quantum Monte Carlo (DQMC) algorithm \cite{Blankenbecler1981} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$. The latter comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
+We begin by recalling the determinant quantum Monte Carlo (DQMC) algorithm \cite{Blankenbecler1981} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$. The latter comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
 interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
 %
 \begin{equation}
@@ -110,7 +110,7 @@ Next, the exponential is separated which leads to a systematic error of the orde
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[ \prod_{l=1}^{m} B_l \right]} + \mathcal{O}\left(\Delta\tau^2\right). \label{eq:Ztr}
 \end{align}
 %
-Here, $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ are imaginary time slice propagators. Note that their potential contribution $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ depends on the boson $\phi$ due to fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \textcolor{red}{CITE}, yields the fundamental form
+Here, $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ are imaginary time slice propagators. Note that their potential contribution $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ depends on the boson $\phi$ due to fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \cite{Assaad2002a}, yields the fundamental form
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \det{G_\phi^{-1}} + \mathcal{O}\left(\Delta\tau^2\right), \label{eq:DQMC}
@@ -122,13 +122,13 @@ where
 \end{align}
 is the equal-time Green's function of the system.
 
-As per Eq.~\eqref{eq:DQMC}, the probability weight appearing in a Metropolis Monte Carlo scheme reads
+According to Eq.~\eqref{eq:DQMC}, the probability weight appearing in a Metropolis Monte Carlo scheme reads
 \begin{align}
-p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis},
+p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis}
 \end{align}
-which tells us that, considering a generic update, we need to compute the Green's function $G$ and it's determinant for both the current and the proposed state ($G'$) of the Markov walker. For local updates, however, one can typically avoid those costly calculations and rather compute the ratio of determinants in Eq.~\eqref{eq:metropolis} directly.
+which implies that, considering a generic update, one needs to compute the Green's function $G$ and it's determinant for both the current and the proposed state ($G'$) of the Markov walker. For local updates, however, one can typically avoid those costly calculations and rather compute the ratio of determinants in Eq.~\eqref{eq:metropolis} directly.
 
-Importantly, it is only under specific circumstances, such as the presence of a symmetry, that the integral kernel can be safely interpreted as a probability weight as $G_\phi$ and its determinant are generally complex valued. This is the famous sign problem\textcolor{red}{CITE}.
+Importantly, it is only under specific circumstances, such as the presence of a symmetry, that the integral kernel can be safely interpreted as a probability weight as $G_\phi$ and its determinant are generally complex valued. This is the famous sign problem \cite{Li2019}.
 
 \section{Numerical instabilities}\label{sec:instabilities}
 
@@ -157,7 +157,7 @@ As seen from Eq.~\eqref{etgf}, the building block of the equal-time Green's func
 \begin{align}
 B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
 \end{align}
-where in the second equality  we have assumed that the slice matrices are independent of imaginary time to simplify our numerical analysis.
+where in the second equality  we have assumed that the slice matrices are independent of imaginary time to simplify our numerical analysis\footnote{From a computational complexity point of view, this simplification is irrelevant. It corresponds to assuming a constant Hubbard-Stratonovich field.}.
 
 First, we consider the non-interacting system, $U=0$. In Fig.~\ref{fig:naive_vs_stable}, we show that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the system are given by
 \begin{align}
@@ -179,7 +179,7 @@ Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obt
 
 \section{\label{sec:stabilization}Stabilization}
 
-A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia this can be done by using the \texttt{BigFloat} data type. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly}.
+A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia this can be done by using the \texttt{BigFloat} data type\footnote{Technically, \texttt{BigFloat} has a finite, arbitrarily high precision.}. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly.}.
 
 How can we get a handle on the numerical instabilities in a floating point precision computation? The idea is to keep the broadly different scales separated throughout the computation (as much as possible) and only mix them in the final step, if necessary. A useful tool along these lines are matrix decompositions,
 \begin{align}
@@ -350,7 +350,7 @@ These findings suggest that only the QR decomposition and the Jacobi SVD are sui
 
 \subsection{Efficiency}
 
-Independent of the deployed inversion scheme, matrix decompositions account for most of the time cost of the Green's function calculation. Fig.~\ref{fig:benchmark_decomps} illustrates the raw efficiency of all SVDs relative to the QR decomposition. While the conventional SVD and the Jacobi SVD are about an order of magnitude slower, the divide-and-conquer based SVD is in the same ballpark as the QR decomposition. The Jacobi SVD variant is, by far, the most costly of all considered matrix decompositions, being 10 times more time consuming than the QR decomposition, even for small system sizes.
+Independent of the deployed inversion scheme, matrix decompositions account for most of the computational cost in the Green's function calculation. Fig.~\ref{fig:benchmark_decomps} illustrates the raw efficiency of all SVDs relative to the QR decomposition. While the conventional SVD and the Jacobi SVD are about an order of magnitude slower, the divide-and-conquer based SVD is in the same ballpark as the QR decomposition. The Jacobi SVD variant is, by far, the most costly of all considered matrix decompositions, being 10 times more time consuming than the QR decomposition, even for small system sizes.
 
 Since the decompositions represent the performance bottleneck, we expect that these speed differences propagate and dominate benchmarks of the full Green's function computations. As visible in Figs.~\ref{fig:greens_accuracy_regularinv} and \ref{fig:greens_accuracy_loh}, this anticipation is qualitatively confirmed up to numerical deviations. Independent of the deployed inversion scheme, the divide-and-conquer SVD can compete with the QR decomposition in terms of speed whereas the other SVD algorithms unambiguously fall behind. We note that the relative slowdown factor is larger for the scheme by Loh \textit{et al.}, which is understood from the fact that it requires two intermediate matrix decompositions rather than one.
 
@@ -405,7 +405,8 @@ As a first explicit procedure, we consider a simple generalization of Eq.~\ref{e
 \end{align}
 where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 
-Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scales in $D$, is as follows (\texttt{inv\_sum\_loh}), \cite{Loh2005}
+A different scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scales in $D$, is as follows (\texttt{inv\_sum\_loh}), \cite{Loh2005}
+\begin{widetext}
 \begin{align}
 	G(\tau_1, \tau_2) &= [U_L D_L X_L + U_R D_R X_R]^{-1} \nonumber\\
 	&= [U_L D_{Lm} D_{Lp} X_L + U_R D_{Rm} D_{Rp} X_R]^{-1} \nonumber\\
@@ -413,27 +414,29 @@ Another scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the scal
 	&= X_R^{-1} \underbrace{\dfrac{1}{D_{Rp}} [udx]^{-1} \dfrac{1}{D_{Lp}}}_{udx} U_L^\dagger \label{eq:inversion_tdgf_loh} \\
 	&= U_r D_r X_r, \nonumber
 \end{align}
+\end{widetext}
 with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
 We note in passing that \citet{Hirsch1988} has proposed an alternative method for computing the time-displaced Green's function based on a space-time matrix formulation of the problem. Although this technique has been successfully deployed in many-fermion simulations we won't discuss it here because of its subpar computational scaling: for a system composed of $N$ lattice sites, fermion flavors $f$, and imaginary time extent $M$ one has to invert (naively a $\mathcal{O}(x^3)$ operation) a matrix which takes up $\mathcal{O}((NMf)^2)$ memory.
 
 \subsection{Accuracy}
 
-\begin{figure}
+\begin{figure}[b]
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf_U0.pdf}
 	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum}, Eq.~\eqref{eq:inversion_tdgf}, for $\beta = 40$. \label{fig:tdgf_accuracy_regularinv}}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[b]
 	\includegraphics[width=0.45\textwidth]{figures/accuracy_tdgf_loh_U0.pdf}
 	\caption{\textbf{Accuracy of the time-displaced Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion scheme \texttt{inv\_sum\_loh}, Eq.~\eqref{eq:inversion_tdgf_loh}, for $\beta = 40$. Shown are results for $U=0$. \label{fig:tdgf_accuracy_loh}}
 \end{figure}
 In Fig.~\ref{fig:tdgf_accuracy_regularinv}, we show the logarithmic maximal deviation of the time-displaced Green's function as calculated using the regular inversion scheme \texttt{inv\_sum} from the exact Green's function as a function of the time-displacement $\tau$ at inverse temperature $\beta=40$. Clearly, both non-Jacobi SVDs fail to capture the intrinsic scales sufficiently and errors much beyond floating point precision are seen. Although the QR decomposition systematically leads to equally or more accurate values for all considered imaginary times, it fails to be reliable at long times $\tau\sim\beta/2$ (recall that the Green's function is anti-periodic in $\tau$). Only the Jacobi SVD delivers reliable results for all considered imaginary times.
 
-When switching to the inversion scheme \texttt{inv\_sum\_loh}, this picture changes, as can be seen in Fig.~\ref{fig:tdgf_accuracy_loh}. While the non-Jacobi SVDs show similar (insufficient) accuracy as when deployed in combination with \texttt{inv\_sum}, using the QR decomposition leads to stable Green's function estimates up to floating point precision across the entire imaginary time axis. Similar to our findings for the equal-time Green's function, this suggests that only the Jacobi SVD and the QR decomposition, when paired with the appropriate inversion procedure, are reliable in a DQMC context.
+When switching to the inversion scheme \texttt{inv\_sum\_loh}, the situation changes, as can be seen in Fig.~\ref{fig:tdgf_accuracy_loh}. While the non-Jacobi SVDs show similar (insufficient) accuracy as when deployed in combination with \texttt{inv\_sum}, using the QR decomposition leads to stable Green's function estimates up to floating point precision across the entire imaginary time axis. Similar to our findings for the equal-time Green's function, this suggests that only the Jacobi SVD and the QR decomposition, when paired with the appropriate inversion procedure, are reliable in a DQMC context.
 
 \subsection{Efficiency}\label{sec:tdgfbenchmark}
-\textcolor{red}{TODO: Benchmark section where we compare Jacobi SVD + simple inversion vs QR + loh inversion.}
+
+Finally, we compare the computational efficiency of the Jacobi SVD combined with the regular inversion and the QR decomposition paired with \texttt{inv\_sum\_loh}. As shown in Fig.~\ref{fig:tdgf_benchmark}, we find that the latter is consistently faster for all considered system sizes. In relative terms, the SVD based approach is at least a factor of two slower and seems to display inferior scaling with the chain length $N$. This indicates that in a DQMC context numerical stabilization via QR decompositions should be preferred despite the higher complexity of the inversion scheme.
 
 \begin{figure}
 	\includegraphics[width=0.45\textwidth]{figures/benchmark_jacobi_vs_qr_tdgf.pdf}
@@ -442,15 +445,15 @@ When switching to the inversion scheme \texttt{inv\_sum\_loh}, this picture chan
 
 \section{Discussion}\label{sec:discussion}
 
-Numerical instabilities are naturally present in quantum Monte Carlo simulations of many-fermion systems. Different algorithmic schemes and matrix decomposition techniques have been proposed over time to handle the exponential spread of scales in a stable manner. However, as we have shown in this review, they can have vastly different accuracy and efficiency rendering them more or less suited for determinant quantum Monte Carlo simulations.
+Numerical instabilities are naturally present in quantum Monte Carlo simulations of many-fermion systems. Different algorithmic schemes and matrix decomposition techniques have been proposed over time to handle the exponential spread of scales in a stable manner. However, as we have shown in these notes, they can have vastly different accuracy and efficiency rendering them more or less suited for determinant quantum Monte Carlo simulations.
 
 For the considered one-dimensional Hubbard model, we were able to compute the equal-time Green's function and its determinant to floating point precision using the QR-based UDT decomposition and the Jacobi SVD. In case of the time-displaced Green's function, the QR had to be combined with the inversion algorithm suggested by ~\citet{Loh1989} while the Jacobi SVD was accurate irrespective of the inversion scheme. Conventional and divide-and-conquer based SVDs consistently failed to produce reliable results in both cases, in particular at the lowest considered temperatures, $\beta \sim 40$.
 
 In terms of speed, we find that the QR decomposition outperforms the conventional and Jacobi SVDs by a large margin while only the D\&C SVD variant has similar computational efficiency. Since the inversion scheme in the QR case involves matrix divisions this observed performance difference is not exclusively due to - but dominated by - the computational cheapness of a QR decomposition compared to a SVD.
 
-In summary, our assessment suggests that the QR decomposition is the best choice for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions, the accuray strongly depends on the chosen inversion scheme. Among the ones considered in these notes, only the algorithm by  ~\citet{Loh1989} could produce reliable results. The Jacobi SVD, although computationally much more expensive, proved to be a stable alternative.
+In summary, our assessment suggests that the QR decomposition is the best choice for DQMC simulations as it is both fast and stable. However, when utilized in the computation of time-displaced Green's functions, the accuray strongly depends on the chosen inversion scheme. Among the ones considered in these notes, only the algorithm by  ~\citet{Loh1989} could produce reliable results. The Jacobi SVD, although computationally more expensive, proved to be a stable alternative.
 
-Finally, let us remark that the performance of all stabilization schemes is affected by the condition number of the time slice matrices and is therefore model (parameter) dependent. While we have not investigated this dependence in systematic detail,  we nonetheless think that our major conclusions bear some universality and will hopefully serve as a useful guide, 
+Finally, let us remark that the performance of all stabilization schemes is affected by the condition number of the time slice matrices and is therefore model (parameter) dependent. While we have not investigated this dependence in systematic detail,  we nonetheless think that our major conclusions bear some universality and will hopefully serve as a useful guide.
 
 \section{Acknowledgements}
 
