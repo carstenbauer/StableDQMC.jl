@@ -390,20 +390,24 @@ Independent of the deployed inversion scheme, matrix decompositions account for 
 Since the decompositions represent the performance bottleneck, we expect that these speed differences propagate and dominate benchmarks of the full Green's function computations. As visible in Figs.~\ref{fig:greens_accuracy_regularinv} and \ref{fig:greens_accuracy_loh}, this anticipation is qualitatively confirmed up to numerical deviations. Independent of the deployed inversion scheme, the divide-and-conquer SVD can compete with the QR decomposition in terms of speed whereas the other SVD algorithms unambiguously fall behind. We note that the relative slowdown factor is larger for the scheme by Loh \textit{et al.}, which is understood from the fact that it requires two intermediate matrix decompositions rather than one.
 
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{figures/benchmark_decomps.pdf}
+	\includegraphics[width=0.8\textwidth]{figures/benchmark_decomps.pdf}
 	\caption{\textbf{Efficiency of different matrix decompositions}. Shown are the slowdown factors of single SVDs relative to a QR decomposition of a complex matrix of size $N \times N$. \label{fig:benchmark_decomps}}
 \end{figure}
 
 
-
 \begin{figure}
-	\includegraphics[width=0.45\textwidth]{figures/benchmark_fact_inv_one_plus.pdf}
-	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus}, Eq.~\eqref{eq:inversion}. \label{fig:greens_benchmark_regularinv}}
-\end{figure}
-
-\begin{figure}
-	\includegraphics[width=0.45\textwidth]{figures/benchmark_fact_inv_one_plus_loh.pdf}
-	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\eqref{eq:inversion_loh}. Shown are results for $U=0$. \label{fig:greens_benchmark_loh}}
+	\centering
+	\begin{subfigure}{0.48\textwidth}
+			\includegraphics[width=\textwidth]{figures/benchmark_fact_inv_one_plus.pdf}
+		\caption{\texttt{inv\_one\_plus}, Eq.~\eqref{eq:inversion}. \label{fig:greens_benchmark_regularinv}}
+	\end{subfigure}%
+	\hspace{10pt}
+	\begin{subfigure}{0.48\textwidth}
+		\includegraphics[width=\textwidth]{figures/benchmark_fact_inv_one_plus_loh.pdf}
+		\caption{\texttt{inv\_one\_plus\_loh}, Eq.~\eqref{eq:inversion_loh}. \label{fig:greens_benchmark_loh}}
+	\end{subfigure}
+	\vspace{5pt}
+	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion schemes. Shown are results for $U=0$.}
 \end{figure}
 
 
