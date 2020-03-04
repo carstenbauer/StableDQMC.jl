@@ -1,0 +1,4 @@
+[deps]
+Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
+SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
