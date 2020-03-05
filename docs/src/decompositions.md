@@ -2,7 +2,15 @@
 
 ## UDT (QR) factorization
 
-Based on the QR decomposition, we introduce a `UDT` factorization, where `U` is unitary, `D` is real-valued and diagonal, and `T` is upper-triangular. To decompose a given matrix `M` the `udt` function is exported.
+Based on the (pivoted) QR decomposition, we introduce a $UDT$ factorization,
+```math
+\begin{aligned}
+	B = QR = UDT,
+\end{aligned}
+```
+where we have split $R$ into a diagonal piece $D$ and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular.
+
+To decompose a given matrix `M` the `udt` function is exported.
 
 ```julia
 julia> M = rand(10,10);
@@ -14,6 +22,14 @@ UDT{Float64,Float64,Array{Float64,2}}([-0.246588 0.12668 … 0.582208 0.206435; 
 In our tests (see `paper/`), this decomposition turns out to be superior to `SVD` for DQMC.
 
 ## SVD factorization
+
+A singular value decomposition (SVD) is given by
+```math
+\begin{aligned}
+	B = USV^\dagger,
+\end{aligned}
+```
+where $U$ is unitary, $S$ is a real diagonal matrix, and $V^\dagger$ is unitary.
 
 The package provides convenient access to several LAPACK algorithms for calculating singular value decompositions (SVDs):
 

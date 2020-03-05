@@ -174,7 +174,7 @@ end
 
 
 """
-  inv_one_plus_loh!(res, F::SVD) -> res
+    inv_one_plus_loh!(res, F::SVD) -> res
 
 Stabilized calculation of [1 + USVt]^(-1):
 
@@ -194,7 +194,7 @@ end
 
 
 """
-  inv_one_plus_loh(F::SVD) -> AbstractMatrix
+    inv_one_plus_loh(F::SVD) -> AbstractMatrix
 
 Stabilized calculation of [1 + USVt]^(-1):
 

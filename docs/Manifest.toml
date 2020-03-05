@@ -61,9 +61,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "d112c19ccca00924d5d3a38b11ae2b4b268dda39"
+git-tree-sha1 = "0c16b3179190d3046c073440d94172cfc3bb0553"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "0.3.11"
+version = "0.3.12"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Test", "UUIDs"]
@@ -98,7 +98,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[StableDQMC]]
 deps = ["LinearAlgebra", "Pkg", "Random", "Requires"]
-git-tree-sha1 = "36e9b1ea42fca5da5fb6b8a33e6b94ad0d0808fa"
+path = ".."
 uuid = "0827807b-44c9-51d0-af97-efe667fe6b2a"
 version = "0.1.3"
 

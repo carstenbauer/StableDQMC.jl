@@ -165,7 +165,7 @@ end
 
 
 """
-  inv_one_plus!(res, F::UDT) -> res
+    inv_one_plus!(res, F::UDT) -> res
 
 Same as `inv_one_plus` but stores the result in preallocated `res`.
 """
@@ -265,7 +265,7 @@ end
 
 
 """
-  inv_one_plus!(res, A::UDT, Bdagger::UDT) -> res
+    inv_one_plus!(res, A::UDT, Bdagger::UDT) -> res
 
 Stabilized calculation of [1 + UlDlTl(UrDrTr)^†]^(-1).
 Writes the result into `res`.
@@ -281,7 +281,7 @@ end
 
 
 """
-  inv_one_plus(A::UDT, Bdagger::UDT) -> AbstractMatrix
+    inv_one_plus(A::UDT, Bdagger::UDT) -> AbstractMatrix
 
 Stabilized calculation of [1 + UlDlTl(UrDrTr)^†]^(-1).
 
@@ -431,7 +431,7 @@ end
 
 
 """
-  inv_one_plus_loh!(res, F::UDT) -> res
+    inv_one_plus_loh!(res, F::UDT) -> res
 
 Stabilized calculation of [1 + UDT]^(-1):
 
@@ -451,7 +451,7 @@ end
 
 
 """
-  inv_one_plus_loh(F::UDT) -> AbstractMatrix
+    inv_one_plus_loh(F::UDT) -> AbstractMatrix
 
 Stabilized calculation of [1 + UDT]^(-1):
 

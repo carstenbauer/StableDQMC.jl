@@ -15,8 +15,7 @@ end
 
 
 """
-
-calc_Bchain(B,N) -> (R, svs)
+    calc_Bchain(B,N) -> (R, svs)
 
 Calculate B^N as B*B*B*B*...*B from right to left.
 
