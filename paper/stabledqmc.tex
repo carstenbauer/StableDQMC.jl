@@ -30,7 +30,74 @@
 \usepackage{afterpage}
 \usepackage{bbold}
 \usepackage{amssymb}
+% below, packages for all kinds of unicode symbols
+%\usepackage{amsmath}
+%\usepackage{amsxtra}
+%\usepackage{bbold}
+%\usepackage{isomath}
+%\usepackage{mathdots}
+%\usepackage{stmaryrd}
+\usepackage{wasysym}
 %\usepackage{natbib}
+
+
+% numerical scales
+%\newcommand{\stiny}{\scalebox{0.5}{x}}
+%\newcommand{\ssmall}{\scalebox{0.9}{x}}
+%\newcommand{\smedium}{\scalebox{1.3}{x}}
+%\newcommand{\slarge}{\scalebox{1.7}{x}}
+
+%\newcommand{\stiny}{\scalebox{0.5}{s}}
+%\newcommand{\ssmall}{\scalebox{0.9}{s}}
+%\newcommand{\smedium}{\scalebox{1.3}{s}}
+%\newcommand{\slarge}{\scalebox{1.7}{s}}
+
+\newcommand{\stiny}{\scalebox{0.5}{s}}
+\newcommand{\ssmall}{\scalebox{0.9}{s}}
+\newcommand{\smedium}{\scalebox{1.3}{s}}
+\newcommand{\slarge}{\scalebox{1.7}{s}}
+
+%\newcommand{\stiny}{\scalebox{0.5}{\CIRCLE}}
+%\newcommand{\ssmall}{\scalebox{0.9}{\CIRCLE}}
+%\newcommand{\smedium}{\scalebox{1.3}{\CIRCLE}}
+%\newcommand{\slarge}{\scalebox{1.7}{\CIRCLE}}
+
+\newcommand{\U}{\left[
+	\begin{array}{cccc}
+		\ssmall & \ssmall & \ssmall & \ssmall \\
+		\ssmall & \ssmall & \ssmall & \ssmall \\
+		\ssmall & \ssmall & \ssmall & \ssmall \\
+		\ssmall & \ssmall & \ssmall & \ssmall \\
+	\end{array}
+	\right]}
+
+\newcommand{\Dp}{\left[
+	\begin{array}{cccc}
+		\slarge &  &  &  \\
+		& \smedium &  &  \\
+		&  & \ssmall &  \\
+		&  &  & \ssmall \\
+	\end{array}
+	\right]}
+
+\newcommand{\Dm}{\left[
+	\begin{array}{cccc}
+		\ssmall &  &  &  \\
+		& \ssmall &  &  \\
+		&  & \ssmall &  \\
+		&  &  & \stiny \\
+	\end{array}
+	\right]}
+
+
+\newcommand{\D}{\left[
+	\begin{array}{cccc}
+		\slarge &  &  &  \\
+		& \smedium &  &  \\
+		&  & \ssmall &  \\
+		&  &  & \stiny \\
+	\end{array}
+	\right]}
 
 \begin{document}
 
@@ -143,7 +210,7 @@ To showcase the typical numerical instabilities arising in the DQMC framework we
 \begin{align}
 	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + U \sum_i \left( n_{i\uparrow} - \frac{1}{2} \right) \left( n_{i\downarrow} - \frac{1}{2} \right) \label{eq:model},
 \end{align}
-and set the hopping amplitude to unity, $t=1$.
+and set the hopping amplitude to unity, $t=1$\footnote{We will consider the canonical discrete decoupling \cite{Hirsch1983} in the spin channel due to Hirsch.}.
 %\begin{align}
 %H = \left[
 %\begin{array}{cccccccc}
@@ -172,7 +239,7 @@ First, we consider the non-interacting system, $U=0$. In Fig.~\ref{fig:naive_vs_
 \end{align}
 The energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. Hence, a single positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$, which gives $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$ for  the product chain $B(\tau, 0)$. This implies that the scales present in $B(\tau, 0)$ broaden exponentially at low temperatures $T=1/\beta$ and roundoff errors due to finite machine precision will spoil a naive computation. We can estimate the inverse temperature of this breakdown of the calculation for the data type \texttt{Float64}, that is double floating-point precision according to the IEEE 754 standard \cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. This gives $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching the data type to \texttt{Float128} (quadruple precision), we see in Fig.~\ref{fig:naive_vs_stable_float128} that the onset of roundoff errors is shifted to lower temperatures as expected.
 
-Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obtained from a naive computation are generally not invertible and the inversion in Eq.~\ref{etgf} is ill defined. This clearly prohibits a safe calculation of the equal-time Green's function and asks for more sophisticated techniques.
+Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obtained from a naive computation are generally not invertible such that the inversion in Eq.~\ref{etgf} is ill defined. This clearly prohibits a safe calculation of the equal-time Green's function and asks for more sophisticated techniques.
 
 
 \begin{figure}
@@ -207,10 +274,31 @@ Instead of calculating products $B_2 B_1$ appearing in $B(\tau, 0)$, Eq.~\ref{eq
 
 \begin{align}
 	B_2 B_1 &= \underbrace{U_2 D_2 X_2}_{B_2}\underbrace{U_1 D_1 X_1}_{B_1} \nonumber\\
-	&= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\\
+	&= U_2 \underbrace{(D_2 ((X_2 U_1) D_1))}_{U' D' X'} X_1)\label{eq:stabmult}\\
 	&= U_r D_r X_r. \nonumber
 \end{align}
-Here, $U_r = U_2 U'$, $D_r = D'$, $X_r = X' X_1$, and $U'D'X'$ indicates an intermediate matrix decomposition. If we follow this scheme, in which parentheses indicate the order of operations, largely different scales present in the diagonal matrices won't be mixed throughout the computation. Repeating this procedure, we obtain a numerically accurate $UDX$ decomposition of the full slice matrix product chain $B(\tau, 0)$.\footnote{Note that we do not discuss the option to calculate $B^M$ as $U D^M X$. This is intentional since most real systems will involve fermion-boson interactions and the slice matrices will depend on $\phi(\tau)$.} We note in passing that in a practical DQMC implementation it is often unnecessary to stabilize every single matrix product. Instead one typically performs a mixture of naive and stabilized products for the sake of speed while still retaining numerical accuracy \cite{Assaad2002a}.
+Here, $U_r = U_2 U'$, $D_r = D'$, $X_r = X' X_1$, and $U'D'X'$ indicates an intermediate matrix decomposition. If we follow this scheme, in which parentheses indicate the order of operations, largely different scales present in the diagonal matrices won't be mixed throughout the computation. Specifically, note that the multiplications of the well-conditioned, combined, unit-scale matrix $U = X_2 U_1$ with $D_1$ and $D_2$ do preserve the scale information: the diagonal matrices only rescale the columns and rows of the $U$,
+\begin{align}
+D_2  U D_1 &= \D  \U \D  \\
+&= \D \left[
+\begin{array}{cccc}
+\ssmall\slarge & \ssmall\smedium & \ssmall^2 & \ssmall\stiny \\
+\ssmall\slarge & \ssmall\smedium & \ssmall^2 & \ssmall\stiny \\
+\ssmall\slarge & \ssmall\smedium & \ssmall^2 & \ssmall\stiny \\
+\ssmall\slarge & \ssmall\smedium & \ssmall^2 & \ssmall\stiny \\
+\end{array}
+\right]\\
+&= \left[
+\begin{array}{cccc}
+	\slarge^2\ssmall & \slarge\smedium\ssmall & \slarge\ssmall^2 & \slarge\ssmall\stiny \\
+	\slarge\smedium\ssmall & \smedium^2\ssmall & \smedium\ssmall^2 & \smedium\ssmall\stiny \\
+	\slarge\ssmall^2 & \smedium\ssmall^2 & \ssmall^3 & \ssmall^2\stiny \\
+	\slarge\ssmall\stiny & \smedium\ssmall\stiny & \ssmall^2\stiny & \ssmall\stiny^2 \\
+\end{array}
+\right].
+\end{align}
+
+Repeating the procedure \eqref{eq:stabmult}, we obtain a numerically accurate $UDX$ decomposition of the full slice matrix product chain $B(\tau, 0)$.\footnote{Note that we do not discuss the option to calculate $B^M$ as $U D^M X$. This is intentional since most real systems will involve fermion-boson interactions and the slice matrices will depend on $\phi(\tau)$.} We note in passing that in a practical DQMC implementation it is often unnecessary to stabilize every single matrix product. Instead one typically performs a mixture of naive and stabilized products for the sake of speed while still retaining numerical accuracy \cite{Assaad2002a}.
 
 \subsection{Matrix decompositions}
 
@@ -221,7 +309,7 @@ A singular value decomposition (SVD) is given by
 \begin{align}
 	B = USV^\dagger,
 \end{align}
-where $U$ is unitary, $S$ is a real diagonal matrix, and $V^\dagger$ is unitary. In this case we can use the unitarity of $U$ and $V^\dagger$ to calculate inverse terms in the last line of \ref{eq:inversion} like, for example, $(Uu)^{-1}$ as $(Uu)^{-1} = u^\dagger U^\dagger$, which is generally cheaper.
+where $U$ is unitary, $S$ is a real diagonal matrix, and $V^\dagger$ is unitary.
 
 Julia offers a couple of purely-Julia SVD implementations, like \href{https://github.com/JuliaLinearAlgebra/GenericSVD.jl/}{GenericSVD.jl}, which we will use for \texttt{BigFloat} computations. However, some of the most optimized algorithms are part of LAPACK \cite{LAPACK} and Julia defaults to those algorithms for regular floating point types. Concretely, there are three SVD functions\footnote{Note that Fortran LAPACK functions are named according to realness and symmetries of the matrix. In Julia multiple-dispatch takes care of routing different matrix types to different \textit{methods}. The Julia function \texttt{gesdd} works for both real and complex matrices, i.e. there is no (need for) \texttt{cgesdd}.} implementing different algorithms for calculating the SVD:
 \begin{itemize}
@@ -236,12 +324,12 @@ A QR decomposition reads
 \begin{align}
 	B = QR = UDT,
 \end{align}
-where we have split $R$ into a diagonal, $D$, and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}. Analogously, a decomposition into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
+where we have split $R$ into a diagonal piece $D$ and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}\footnote{We use a pivoted QR in our analysis.}. Analogously, a decomposition into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
 
 \section{Stabilization: equal-time Green's function}
 
 \subsection{Inversion schemes}
-Looking at the equal-time Green's function in Eq.~\ref{etgf}, we have to be careful to keep scales separated in the inversion of $1 + B(\beta, 0)$ as well. In fact, small singular values of the order of unity in $B(\beta, 0)$ would even be washed out just by naively adding the identity matrix alone. Fortunately, these issues can be circumvented as well.
+Looking at the equal-time Green's function in Eq.~\ref{etgf}, we have to be careful to keep scales separate as much as possible in adding the identity, which will wash out small singular values, and performing the inversion of $1 + B(\beta, 0)$.
 
 A straightforward procedure (\texttt{inv\_one\_plus}) to add the unit matrix and perform the inversion in a stabilized manner is given by \cite{Santos2003, Assaad2002a}
 
@@ -251,9 +339,23 @@ A straightforward procedure (\texttt{inv\_one\_plus}) to add the unit matrix and
 	&= [(Uu)d(xX)]^{-1} \label{eq:inversion}\\
 	&= U_r D_r X_r \nonumber,
 \end{align}
-with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
+with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$. Here, the intermediate addition (parentheses in the second line of \eqref{eq:inversion}) of unit scales and singular values is separated from the unitary rotations,
+\begin{align}
+U^\dagger X^{-1} + D = \U + \D = \left[
+\begin{array}{cccc}
+\slarge & \ssmall & \ssmall & \ssmall \\
+\ssmall & \smedium & \ssmall & \ssmall \\
+\ssmall & \ssmall & \ssmall & \ssmall \\
+\ssmall & \ssmall & \ssmall & \ssmall \\
+\end{array}
+\right].
+\end{align}
 
-Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_loh}), where we initially separate the scales in as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$ and perform two intermediate decompositions, is given by \cite{Loh2005, Loh1989}
+However, when combined with certain matrix decompositions, this scheme will still fail to give accurate results for the equal-time Green's function $G$, as we will demonstrate below. Therefore we consider another stabilization scheme for the inversion \cite{Loh2005, Loh1989} (\texttt{inv\_one\_plus\_loh}), in which we initially separate the scales in $D$ as $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$,
+\begin{align}
+D_p = \Dp, \quad D_m = \Dm,
+\end{align}
+and perform two intermediate decompositions,
 \begin{align}
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber\\
 	&= [\mathbb{1} + UD_mD_pX]^{-1} \nonumber\\
@@ -261,7 +363,32 @@ Another prescription for a stabilized inversion (\texttt{inv\_one\_plus\_loh}), 
 	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{X^{-1} D_p^{-1} + UD_m}_{udx})^{-1}]}_{udx} \nonumber \\
 	&= U_r D_r X_r, \nonumber
 \end{align}
-with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. We will demonstrate below that it is sometimes necessary to employ this second procedure to obtain accurate results for $G$.\\
+with $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$.
+\begin{align}
+	X^{-1} D_p^{-1} + UD_m &\approx \left[
+	\begin{array}{cccc}
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall/\smedium & \ssmall& \ssmall\stiny + \ssmall \\
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall/\smedium & \ssmall& \ssmall\stiny + \ssmall \\
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall/\smedium & \ssmall& \ssmall\stiny + \ssmall \\
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall/\smedium & \ssmall& \ssmall\stiny + \ssmall \\
+	\end{array}
+	\right] \approx \left[
+	\begin{array}{cccc}
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall\stiny & \ssmall& \ssmall\stiny + \ssmall \\
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall\stiny & \ssmall& \ssmall\stiny + \ssmall \\
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall\stiny & \ssmall& \ssmall\stiny + \ssmall \\
+	\ssmall + \ssmall/\slarge & \ssmall + \ssmall\stiny & \ssmall& \ssmall\stiny + \ssmall \\
+	\end{array}
+	\right] \\
+D_p^{-1} (udx)^{-1} &\approx \left[
+\begin{array}{cccc}
+\ssmall/\slarge & \ssmall/\slarge & \ssmall/\slarge & \ssmall/\slarge \\
+\ssmall/\smedium & \ssmall/\smedium & \ssmall/\smedium & \ssmall/\smedium \\
+\ssmall & \ssmall & \ssmall & \ssmall \\
+\ssmall & \ssmall & \ssmall & \ssmall \\
+\end{array}
+\right].
+\end{align}
 
 \subsection{Benchmarks}\label{sec:benchmarks}
 
@@ -459,7 +586,7 @@ A different scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the 
 \end{align}
 with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
-We note in passing that \citet{Hirsch1988} has proposed an alternative method for computing the time-displaced Green's function based on a space-time matrix formulation of the problem. Although this technique has been successfully deployed in many-fermion simulations we won't discuss it here because of its subpar computational scaling: for a system composed of $N$ lattice sites, fermion flavors $f$, and imaginary time extent $M$ one has to invert (naively a $\mathcal{O}(x^3)$ operation) a matrix which takes up $\mathcal{O}((NMf)^2)$ memory.
+We note in passing that \cite{Hirsch1988} has proposed an alternative method for computing the time-displaced Green's function based on a space-time matrix formulation of the problem. Although this technique has been successfully deployed in many-fermion simulations we won't discuss it here because of its subpar computational scaling: for a system composed of $N$ lattice sites, fermion flavors $f$, and imaginary time extent $M$ one has to invert (naively a $\mathcal{O}(x^3)$ operation) a matrix which takes up $\mathcal{O}((NMf)^2)$ memory.
 
 \begin{figure}[b]
 	\centering
