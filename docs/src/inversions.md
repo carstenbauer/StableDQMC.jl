@@ -42,7 +42,7 @@ with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 	&= U_r D_r X_r,
 \end{aligned}
 ```
-with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. [Loh2005, Loh1989]
+with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. [[Loh2005](@ref Loh2005), [Loh1989](@ref Loh1989)]
 
 
 ### `inv_sum`
@@ -69,12 +69,12 @@ where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 	&= U_r D_r X_r,
 \end{aligned}
 ```
-with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, $D_{Lp} = \max(D_L, 1)$, $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$. [Loh2005]
+with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, $D_{Lp} = \max(D_L, 1)$, $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$. [[Loh2005]](@ref Loh2005)
 
 
 ## Resources
 
-#### [[Loh2005]](http://www.worldscientific.com/doi/abs/10.1142/S0129183105007911)
+#### [[[Loh2005]](http://www.worldscientific.com/doi/abs/10.1142/S0129183105007911)](@id Loh2005)
 ```
 @article{Loh2005,
 	author = {Loh, E. Y. and Gubernatis, J. E. and Scalettar, R. T. and White, S. R. and Scalapino, D. J. and Sugar, R. L.},
@@ -91,7 +91,7 @@ with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, 
 }
 ```
 
-#### [[Loh1989]](http://link.springer.com/10.1007/978-1-4613-0565-1{\_}8)
+#### [[[Loh1989]](http://link.springer.com/10.1007/978-1-4613-0565-1_8)](@id Loh1989)
 ```
 @incollection{Loh1989,
 	author = {Loh, E. Y. and Gubernatis, J. E. and Scalettar, R. T. and Sugar, R. L. and White, S. R.},
