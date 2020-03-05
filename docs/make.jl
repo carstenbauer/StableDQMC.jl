@@ -6,8 +6,8 @@ makedocs(
     sitename = "StableDQMC.jl",
     pages = [
         "Home" => "index.md",
-        "Matrix Decompositions" => "decompositions.md",
         "Stable Inversion" => "inversions.md",
+        "Matrix Decompositions" => "decompositions.md",
         "Exports" => "exports.md",
     ],
     # assets = ["assets/custom.css", "assets/custom.js"]
