@@ -41,8 +41,8 @@ with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 	&= X^{-1} \underbrace{[D_p^{-1} (\underbrace{X^{-1} D_p^{-1} + UD_m}_{udx})^{-1}]}_{udx} \\
 	&= U_r D_r X_r,
 \end{aligned}
-```math
-with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$.
+```
+with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. [Loh2005, Loh1989]
 
 
 ### `inv_sum`
@@ -54,7 +54,7 @@ with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_
 	&= [(U_L u) d^{-1} (x X_R)]^{-1}\\
 	&= U_r D_r X_r,
 \end{aligned}
-```math
+```
 where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 
 
@@ -69,4 +69,36 @@ where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 	&= U_r D_r X_r,
 \end{aligned}
 ```
-with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, $D_{Lp} = \max(D_L, 1)$, $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
+with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, $D_{Lp} = \max(D_L, 1)$, $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$. [Loh2005]
+
+
+## Resources
+
+#### [[Loh2005]](http://www.worldscientific.com/doi/abs/10.1142/S0129183105007911)
+```
+@article{Loh2005,
+	author = {Loh, E. Y. and Gubernatis, J. E. and Scalettar, R. T. and White, S. R. and Scalapino, D. J. and Sugar, R. L.},
+	title = {{Numerical Stability and the Sign Problem in the Determinant Quantum Monte Carlo Method}},
+	journal = {International Journal of Modern Physics C},
+	volume = {16},
+	number = {08},
+	pages = {1319--1327},
+	month = {aug},
+	year = {2005}
+	issn = {0129-1831},
+	doi = {10.1142/S0129183105007911},
+	url = {http://www.worldscientific.com/doi/abs/10.1142/S0129183105007911},
+}
+```
+
+#### [[Loh1989]](http://link.springer.com/10.1007/978-1-4613-0565-1{\_}8)
+```
+@incollection{Loh1989,
+	author = {Loh, E. Y. and Gubernatis, J. E. and Scalettar, R. T. and Sugar, R. L. and White, S. R.},
+	title = {{Stable Matrix-Multiplication Algorithms for Low-Temperature Numerical Simulations of Fermions}},
+	year = {1989}
+	pages = {55--60},
+	doi = {10.1007/978-1-4613-0565-1_8},
+	url = {http://link.springer.com/10.1007/978-1-4613-0565-1{\_}8},
+}
+```
