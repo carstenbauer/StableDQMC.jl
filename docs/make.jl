@@ -8,7 +8,7 @@ makedocs(
         "Home" => "index.md",
         "Stable Inversion" => "inversions.md",
         "Matrix Decompositions" => "decompositions.md",
-        "Exports" => ["exports/svd.md", "exports/qr_udt.md"],
+        "Exports" => ["exports/qr_udt.md", "exports/svd.md"],
     ],
     # assets = ["assets/custom.css", "assets/custom.js"]
 )
