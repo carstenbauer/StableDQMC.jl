@@ -19,7 +19,7 @@ When function names are suffixed with `_loh`, i.e. `inv_one_plus_loh`, a more so
 
 ## Details
 
-### `inv_one_plus`
+#### `inv_one_plus`
 
 ```math
 \begin{aligned}
@@ -31,7 +31,7 @@ When function names are suffixed with `_loh`, i.e. `inv_one_plus_loh`, a more so
 ```
 with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 
-### `inv_one_plus_loh`
+#### `inv_one_plus_loh`
 
 ```math
 \begin{aligned}
@@ -45,7 +45,7 @@ with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
 with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$. [[Loh2005](@ref Loh2005), [Loh1989](@ref Loh1989)]
 
 
-### `inv_sum`
+#### `inv_sum`
 
 ```math
 \begin{aligned}
@@ -58,7 +58,7 @@ with $D_m = \min(D, 1)$, $D_p = \max(D, 1)$, $U_r = X^{-1}u$, $D_r = d$, and $X_
 where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 
 
-### `inv_sum_loh`
+#### `inv_sum_loh`
 
 ```math
 \begin{aligned}
@@ -70,6 +70,15 @@ where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 \end{aligned}
 ```
 with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, $D_{Lp} = \max(D_L, 1)$, $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$. [[Loh2005]](@ref Loh2005)
+
+### Two argument `inv_one_plus`
+
+#### `inv_one_plus(::UDT, ::UDT)`
+
+
+
+#### `inv_one_plus(::UDT, ::UDT)`
+
 
 
 ## Resources

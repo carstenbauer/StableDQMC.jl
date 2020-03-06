@@ -1,6 +1,6 @@
 # Matrix Decompositions
 
-## UDT (QR) factorization
+## UDT (QR)
 
 Based on the (pivoted) QR decomposition, we introduce a $UDT$ factorization,
 ```math
