@@ -641,6 +641,36 @@ We thank Peter Bröcker, Yoni Schattner, Snir Gazit, and Simon Trebst for useful
 Mention CRC 183 funding here?
 
 
+\begin{appendix}
+
+\section{Inversion schemes for a slice matrix function stack}
+
+In practical implementations of DQMC one typically stores intermediate decomposed slice matrix products $B(\tau_1, \tau_2)$ in a stack for reuse in future Green's function calculations \cite{Assaad2002a, Santos2003, Broecker2016}. In this case, the inversion procedure in Eq.~\eqref{eq:inversion} needs to be supplemented by a scheme to combine two elements $U_L, D_L, X_L$ and $U_R, D_R, X_R$ from the stack. Below we describe the latter for both matrix decompositions considered in the main text\footnote{In \texttt{StableDQMC.jl}, Julia's multiple dispatch will automatically select the correct method based on the number of provided UDT factorizations.}.
+
+\subsection{QR/UDT}
+
+(\texttt{StableDQMC.jl}: \texttt{inv\_one\_plus(::UDT, ::UDT)})
+\begin{align}
+	G &= \left[\mathbb{1} + U_L D_L T_L \left( U_R D_R T_R \right)^\dagger \right]^{-1}\nonumber \\
+	&= \left[\mathbb{1} + U_L \underbrace{\left( D_L \left( T_L T_R^\dagger \right) D_R \right)}_{udt} U_R^\dagger \right]^{-1} \\
+	&= \left[\mathbb{1} + U D T \right]^{-1},\nonumber
+\end{align}
+with $U=U_Lu$, $D=d$, and $T=tU_R^\dagger$. This $UDT$ factorization may now be substituted into Eq.~\eqref{eq:inversion}.
+
+
+\subsection{SVD}
+
+(\texttt{StableDQMC.jl}: \texttt{inv\_one\_plus(::SVD, ::SVD)})
+\begin{align}
+G &= \left[\mathbb{1} + U_L D_L V_L^\dagger U_R D_R V_R^\dagger \right]^{-1} \nonumber \\
+&= \left[\mathbb{1} + U_L \underbrace{\left( D_L \left( V_L^\dagger U_R \right) D_R \right)}_{udv^\dagger} V_R^\dagger \right]^{-1} \\
+&= \left[\mathbb{1} + U D V^\dagger \right]^{-1},\nonumber
+\end{align}
+with $U=U_Lu$, $D=d$, and $V=v V_R$. This SVD factorization may now be substituted into Eq.~\eqref{eq:inversion}.
+
+	
+\end{appendix}
+
 %\section{About references}
 %Your references should start with the comma-separated author list (initials + last name), the publication title in italics, the journal reference with volume in bold, start page number, publication year in parenthesis, completed by the DOI link (linking must be implemented before publication). If using BiBTeX, please use the style files provided  on \url{https://scipost.org/submissions/author_guidelines}.
 %in order to simplify the production of your paper.
