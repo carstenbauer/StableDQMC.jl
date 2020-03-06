@@ -88,15 +88,19 @@ Base.eps(::Type{Complex{Float64}}) = eps(Float64)
             inv_I_plus_xydagger = inv(I + x * y')
             inv_sum_xy = inv(x + y)
 
+            # one UDT argument
+            @test typeof(udt_inv_one_plus(X)) <: UDT
+            @test Matrix(udt_inv_one_plus(X)) ≈ inv_I_plus_x
             @test inv_one_plus(X) ≈ inv_I_plus_x
             @test inv_one_plus!(res, X) ≈ inv_I_plus_x
             @test res ≈ inv_I_plus_x
 
+            # two UDT arguments
             @test typeof(udt_inv_one_plus(X, Y)) <: UDT
             @test Matrix(udt_inv_one_plus(X, Y)) ≈ inv_I_plus_xydagger
             @test inv_one_plus(X,Y) ≈ inv_I_plus_xydagger
             @test inv_one_plus!(res, X,Y) ≈ inv_I_plus_xydagger
-            @test res ≈ inv(I + x * y')
+            @test res ≈ inv_I_plus_xydagger
 
             @test typeof(udt_inv_sum(X,Y)) <: UDT
             @test Matrix(udt_inv_sum(X,Y)) ≈ inv_sum_xy
@@ -104,13 +108,15 @@ Base.eps(::Type{Complex{Float64}}) = eps(Float64)
             @test inv_sum!(res, X,Y) ≈ inv_sum_xy
             @test res ≈ inv_sum_xy
 
-            # Loh et al variants
+            ### Loh et al variants
+            # one UDT argument
             @test typeof(udt_inv_one_plus_loh(X)) <: UDT
             @test Matrix(udt_inv_one_plus_loh(X)) ≈ inv_I_plus_x
             @test inv_one_plus_loh(X) ≈ inv_I_plus_x
             @test inv_one_plus_loh!(res,X) ≈ inv_I_plus_x
             @test res ≈ inv_I_plus_x
 
+            # two UDT arguments
             @test typeof(udt_inv_sum_loh(X,Y)) <: UDT
             @test Matrix(udt_inv_sum_loh(X,Y)) ≈ inv_sum_xy
             @test inv_sum_loh(X,Y) ≈ inv_sum_xy
@@ -130,19 +136,41 @@ Base.eps(::Type{Complex{Float64}}) = eps(Float64)
             res = similar(x)
 
             inv_I_plus_x = inv(I + x)
+            inv_I_plus_xy = inv(I + x * y)
             inv_sum_xy = inv(x + y)
 
+            # one SVD argument
+            @test typeof(svd_inv_one_plus(X)) <: SVD
+            @test Matrix(svd_inv_one_plus(X)) ≈ inv_I_plus_x
             @test inv_one_plus(X) ≈ inv_I_plus_x
-            @test Matrix(svd_inv_one_plus_loh(X)) ≈ inv_I_plus_x
-            @test inv_one_plus_loh(X) ≈ inv_I_plus_x
-            @test inv_one_plus_loh!(res, X) ≈ inv_I_plus_x
+            @test inv_one_plus!(res, X) ≈ inv_I_plus_x
             @test res ≈ inv_I_plus_x
+
+            # two SVD arguments
+            @test typeof(svd_inv_one_plus(X,Y)) <: SVD
+            @test Matrix(svd_inv_one_plus(X,Y)) ≈ inv_I_plus_xy
+            @test inv_one_plus(X,Y) ≈ inv_I_plus_xy
+            @test inv_one_plus!(res, X,Y) ≈ inv_I_plus_xy
+            @test res ≈ inv_I_plus_xy
 
             @test Matrix(svd_inv_sum(X, Y)) ≈ inv_sum_xy
             @test inv_sum(X, Y) ≈ inv_sum_xy
             @test inv_sum!(res, X, Y) ≈ inv_sum_xy
             @test res ≈ inv_sum_xy
 
+            ### Loh et al variants
+            # one SVD argument
+            @test typeof(svd_inv_one_plus_loh(X)) <: SVD
+            @test Matrix(svd_inv_one_plus_loh(X)) ≈ inv_I_plus_x
+            @test inv_one_plus_loh(X) ≈ inv_I_plus_x
+            @test inv_one_plus_loh!(res, X) ≈ inv_I_plus_x
+            @test res ≈ inv_I_plus_x
+
+            # two SVD arguments
+
+            # TODO
+
+            @test typeof(svd_inv_sum_loh(X, Y)) <: SVD
             @test Matrix(svd_inv_sum_loh(X, Y)) ≈ inv_sum_xy
             @test inv_sum_loh(X, Y) ≈ inv_sum_xy
             @test inv_sum_loh!(res, X, Y) ≈ inv_sum_xy

@@ -129,86 +129,71 @@ end
 
 
 
+
+
 """
-    svd_inv_one_plus_loh(F::SVD) -> SVD
+    svd_inv_one_plus(A::SVD, B::SVD) -> SVD
 
-Stabilized calculation of [1 + USVt]^(-1):
+Stabilized calculation of [1 + UlDlVtlUrDrVtr]^(-1). Returns and
+`SVD` factorization object.
 
-  * Separate scales larger and smaller than unity
-  * Use two intermediate SVD decompositions.
+Optional preallocations via keyword arguments:
 
-Options for preallocation via keyword arguments:
-
-  * `l = similar(F.U)`
-  * `r = similar(F.U)`
-  * `Dp = similar(F.D)`
-  * `Dm = similar(F.D)`
+  * `tmp = similar(A.U)`
+  * `tmp2 = similar(A.U)`
+  * `tmp3 = similar(A.U)`
 """
-function svd_inv_one_plus_loh(F::SVD;
-                              svdalg = svd!,
-                              Sp = similar(F.S),
-                              Sm = similar(F.S),
-                              l = similar(F.V),
-                              r = similar(F.U))
-  U, S, V = F
+function svd_inv_one_plus(A::SVD, B::SVD;
+                          svdalg = svd!,
+                          tmp = similar(A.U),
+                          tmp2 = similar(A.U),
+                          tmp3 = similar(A.U),
+                          internaluse = false)
+  Ul,Dl,Vl = A
+  Ur,Dr,Vr = B
 
-  copyto!(l, V)
-  copyto!(r, U)
+  mul!(tmp, Vl', Ur)
+  rmul!(tmp, Diagonal(Dr))
+  lmul!(Diagonal(Dl), tmp)
+  U1, D1, V1 = svdalg(tmp)
 
-  Sp .= max.(S, 1)
-  Sm .= min.(S, 1)
-
-  Sp .\= 1 # Sp now Spinv
-
-  rmul!(l, Diagonal(Sp))
-  rmul!(r, Diagonal(Sm))
-
-  M = svdalg(l + r)
-  m = inv(M)
-  lmul!(Diagonal(Sp), m)
-  u, s, v = svdalg(m)
-  mul!(m, V, u)
-
-  SVD(m, s, v')
+  mul!(tmp3, Ul, U1)
+  mul!(tmp2, V1', Vr')
+  # U = tmp3, D = D1, Vt = tmp2
+  return svd_inv_one_plus(SVD(tmp3, D1, tmp2); t=tmp)
+  # OPT: optimize by manual inlining: reuse other tmp preallocs
 end
 
 
+
 """
-    inv_one_plus_loh!(res, F::SVD) -> res
+    inv_one_plus!(res, A::SVD, B::SVD) -> res
 
-Stabilized calculation of [1 + USVt]^(-1):
-
-  * Separate scales larger and smaller than unity
-  * Use two intermediate SVD decompositions.
-
+Stabilized calculation of [1 + UlDlVtlUrDrVtr]^(-1).
 Writes the result into `res`.
 
-See `svd_inv_one_plus_loh` for preallocation options.
+See `svd_inv_one_plus` for preallocation options.
 """
-function inv_one_plus_loh!(res, F::SVD; kwargs...)
-  M = svd_inv_one_plus_loh(F; kwargs...)
-  rmul!(M.U, Diagonal(M.S))
-  mul!(res, M.U, M.Vt)
+function inv_one_plus!(res, A::SVD, B::SVD; kwargs...)
+  F = svd_inv_one_plus(A, B; internaluse = true, kwargs...)
+  rmul!(F.U, Diagonal(F.S))
+  mul!(res, F.U, F.Vt)
   res
 end
 
 
 """
-    inv_one_plus_loh(F::SVD) -> AbstractMatrix
+    inv_one_plus(A::SVD, B::SVD) -> AbstractMatrix
 
-Stabilized calculation of [1 + USVt]^(-1):
+Stabilized calculation of [1 + UlDlTlUrDrTr]^(-1).
 
-  * Separate scales larger and smaller than unity
-  * Use two intermediate SVD decompositions.
-
-See `svd_inv_one_plus_loh` for preallocation options.
+See `svd_inv_one_plus` for preallocation options.
 """
-function inv_one_plus_loh(F::SVD; kwargs...)
-  res = similar(F.U)
-  inv_one_plus_loh!(res, F; kwargs...)
+function inv_one_plus(A::SVD, B::SVD; kwargs...)
+  res = similar(A.U)
+  inv_one_plus!(res, A, B; kwargs...)
+  return res
 end
-
-
 
 
 
@@ -282,6 +267,97 @@ function inv_sum(A::SVD, B::SVD; kwargs...)
   res = similar(A.U)
   inv_sum!(res, A, B; kwargs...)
   res
+end
+
+
+
+
+
+########################################
+#
+#         Loh et. al. schemes
+#
+########################################
+
+
+
+"""
+    svd_inv_one_plus_loh(F::SVD) -> SVD
+
+Stabilized calculation of [1 + USVt]^(-1):
+
+  * Separate scales larger and smaller than unity
+  * Use two intermediate SVD decompositions.
+
+Options for preallocation via keyword arguments:
+
+  * `l = similar(F.U)`
+  * `r = similar(F.U)`
+  * `Dp = similar(F.D)`
+  * `Dm = similar(F.D)`
+"""
+function svd_inv_one_plus_loh(F::SVD;
+                              svdalg = svd!,
+                              Sp = similar(F.S),
+                              Sm = similar(F.S),
+                              l = similar(F.V),
+                              r = similar(F.U))
+  U, S, V = F
+
+  copyto!(l, V)
+  copyto!(r, U)
+
+  Sp .= max.(S, 1)
+  Sm .= min.(S, 1)
+
+  Sp .\= 1 # Sp now Spinv
+
+  rmul!(l, Diagonal(Sp))
+  rmul!(r, Diagonal(Sm))
+
+  M = svdalg(l + r)
+  m = inv(M)
+  lmul!(Diagonal(Sp), m)
+  u, s, v = svdalg(m)
+  mul!(m, V, u)
+
+  SVD(m, s, v')
+end
+
+
+"""
+  inv_one_plus_loh!(res, F::SVD) -> res
+
+Stabilized calculation of [1 + USVt]^(-1):
+
+  * Separate scales larger and smaller than unity
+  * Use two intermediate SVD decompositions.
+
+Writes the result into `res`.
+
+See `svd_inv_one_plus_loh` for preallocation options.
+"""
+function inv_one_plus_loh!(res, F::SVD; kwargs...)
+  M = svd_inv_one_plus_loh(F; kwargs...)
+  rmul!(M.U, Diagonal(M.S))
+  mul!(res, M.U, M.Vt)
+  res
+end
+
+
+"""
+  inv_one_plus_loh(F::SVD) -> AbstractMatrix
+
+Stabilized calculation of [1 + USVt]^(-1):
+
+  * Separate scales larger and smaller than unity
+  * Use two intermediate SVD decompositions.
+
+See `svd_inv_one_plus_loh` for preallocation options.
+"""
+function inv_one_plus_loh(F::SVD; kwargs...)
+  res = similar(F.U)
+  inv_one_plus_loh!(res, F; kwargs...)
 end
 
 
