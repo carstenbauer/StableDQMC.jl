@@ -19,7 +19,7 @@ When function names are suffixed with `_loh`, i.e. `inv_one_plus_loh`, a more so
 
 ## Details
 
-#### `inv_one_plus`
+#### [`inv_one_plus`](@id inv_one_plus_formula)
 
 ```math
 \begin{aligned}
@@ -30,6 +30,29 @@ When function names are suffixed with `_loh`, i.e. `inv_one_plus_loh`, a more so
 \end{aligned}
 ```
 with $U_r = (xX)^{-1}$, $D_r = d^{-1}$, $X_r = (Uu)^{-1}$.
+
+###### `inv_one_plus(::UDT, ::UDT)`
+
+```math
+\begin{aligned}
+	G &= \left[\mathbb{1} + U_L D_L T_L \left( U_R D_R T_R \right)^\dagger \right]^{-1} \\
+	&= \left[\mathbb{1} + U_L \underbrace{\left( D_L \left( T_L T_R^\dagger \right) D_R \right)}_{udt} U_R^\dagger \right]^{-1} \\
+	&= \left[\mathbb{1} + U D T \right]^{-1},
+\end{aligned}
+```
+with $U=U_Lu$, $D=d$, and $T=tU_R^\dagger$. The remaining computation is then performed as in the single argument version of [`inv_one_plus`](@ref inv_one_plus_formula) above.
+
+
+###### `inv_one_plus(::SVD, ::SVD)`
+
+```math
+\begin{aligned}
+G &= \left[\mathbb{1} + U_L D_L V_L^\dagger U_R D_R V_R^\dagger \right]^{-1}  \\
+&= \left[\mathbb{1} + U_L \underbrace{\left( D_L \left( V_L^\dagger U_R \right) D_R \right)}_{udv^\dagger} V_R^\dagger \right]^{-1} \\
+&= \left[\mathbb{1} + U D V^\dagger \right]^{-1},
+\end{aligned}
+```
+with $U=U_Lu$, $D=d$, and $V=v V_R$. The remaining computation is then performed as in the single argument version of [`inv_one_plus`](@ref inv_one_plus_formula) above.
 
 #### `inv_one_plus_loh`
 
@@ -70,14 +93,6 @@ where $U_r = (x X_R)^{-1}$, $D_r = d^{-1}$, and $X_r = (U_L u)^{-1}$.
 \end{aligned}
 ```
 with $D_{Rm} = \min(D_R, 1)$, $D_{Rp} = \max(D_R, 1)$, $D_{Lm} = \min(D_L, 1)$, $D_{Lp} = \max(D_L, 1)$, $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$. [[Loh2005]](@ref Loh2005)
-
-### Two argument `inv_one_plus`
-
-#### `inv_one_plus(::UDT, ::UDT)`
-
-
-
-#### `inv_one_plus(::UDT, ::UDT)`
 
 
 
