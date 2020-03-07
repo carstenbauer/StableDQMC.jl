@@ -1,4 +1,6 @@
 [deps]
+GenericSVD = "01680d73-4ee2-5a08-a1aa-533608c188bb"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
+StableDQMC = "0827807b-44c9-51d0-af97-efe667fe6b2a"
 SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"

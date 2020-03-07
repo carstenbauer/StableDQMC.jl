@@ -41,6 +41,9 @@
 %\usepackage{natbib}
 
 
+\newcommand{\todo}[1]{\textcolor{red}{[#1]}}
+
+
 % numerical scales
 %\newcommand{\stiny}{\scalebox{0.5}{x}}
 %\newcommand{\ssmall}{\scalebox{0.9}{x}}
@@ -104,7 +107,7 @@
 % TODO: write your article's title here.
 % The article title is centered, Large boldface, and should fit in two lines
 \begin{center}{\Large \textbf{
-Fast and stable determinant quantum Monte Carlo in Julia
+Fast and stable determinant quantum Monte Carlo
 }}\end{center}
 
 % TODO: write the author list here. Use initials + surname format.
@@ -133,7 +136,7 @@ Carsten Bauer\textsuperscript{1*}
 \section*{Abstract}
 {\bf
 % TODO: write your abstract here.
-In these notes we assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we empirically compare various matrix decomposition and inversion schemes to gain control over numerical instabilities arising in the computation of equal-time and time-displaced Green's functions within the determinant quantum Monte Carlo (DQMC) framework. Based on this comparison, we identify a procedure based on pivoted QR decompositions which is both accurate - to machine precision - and efficient. The Julia programming language is used for our assessment and we provide implementations of all discussed algorithms in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
+We assess numerical stabilization methods employed in fermion many-body quantum Monte Carlo simulations. In particular, we empirically compare various matrix decomposition and inversion schemes to gain control over numerical instabilities arising in the computation of equal-time and time-displaced Green's functions within the determinant quantum Monte Carlo (DQMC) framework. Based on this comparison, we identify a procedure based on pivoted QR decompositions which is both accurate to machine precision and efficient. The Julia programming language is used for our assessment and we provide implementations of all discussed algorithms in the open-source software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}.
 }
 
 
@@ -153,38 +156,37 @@ In these notes we assess numerical stabilization methods employed in fermion man
 \section{Introduction}
 
 
-Many-fermion systems play an important role in condensed matter physics. Due to their intrinsic correlations they feature rich phase diagrams which can not be captured by purely classical or non-interacting theories. Especially at the lowest temperatures, quantum mechanical fluctuations driven by Heisenberg's uncertainty principle become relevant and lead to novel states of matter like superconductivity or ones beyond the Fermi liquid paradigm. Because of the presence of interactions, predicting microscopic and thermodynamic properties of fermion many-body systems is inherently difficult. Analytical approaches are typically doomed to fail in cases where one can not rely on the smallness of an expansion parameter.
+Many-fermion systems play an important role in condensed matter physics. Due to their intrinsic correlations they feature rich phase diagrams which can not be captured by purely classical nor non-interacting theories. Especially at the lowest temperatures, quantum mechanical fluctuations driven by Heisenberg's uncertainty principle become relevant and lead to novel phases of matter like superconductivity or states beyond the Fermi liquid paradigm \cite{Bauer2020, Schattner2016}. Because of the presence of interactions, predicting microscopic and thermodynamic properties of fermion many-body systems is inherently difficult. Analytical approaches are typically doomed to fail in cases where one can not rely on the smallness of an expansion parameter \cite{Berg2019}.
 
-Fortunately, the determinant quantum Monte Carlo (DQMC) method overcomes this limitation. The key feature of DQMC is that it is numerically exact - given sufficient computation time the systematical error is arbitrarily small. Provided the absence of the famous sign-problem, it allows us to efficiently explore the relevant region of the exponentially large configuration space in polynomial time. It is an important unbiased technique for obtaining reliable insights into the physics of many-fermion systems.
+Fortunately, the determinant quantum Monte Carlo (DQMC) method \cite{Blankenbecler1981, Loh2005, Scalapino1993, Santos2003, Assaad2002a} overcomes this limitation. The key feature of DQMC is that it is numerically exact - given sufficient computation time the systematical error is arbitrarily small. Provided the absence of the famous sign-problem\cite{Loh1990, Troyer2005}, it allows us to efficiently explore the relevant region of the exponentially large configuration space in polynomial time. It is an important unbiased technique for obtaining reliable insights into the physics of many-fermion systems which, among others, has been applied to the attractive and repulsive Hubbard model \cite{Hirsch1985, White1989, Moreo1991}, the Kane-Mele-Hubbard \cite{Hohenadler2012}, and metallic quantum criticality, including studies of antiferromagnetic\cite{Bauer2020, Schattner2016, Gerlach2017, Berg2019}, Ising-nematic \cite{SchattnerLederer2016}, and deconfined quantum critical points \cite{Gazit2017} where fermionic matter fields are coupled to bosonic order parameters.
 
-Although conceptually straightforward, care has to be taken in implementing DQMC due to inherent numerical instabilities. It is the purpose of these notes to review stabilization schemes to heal those algebraic issues and to compare them with respect to accuracy and speed.
-Specifically, the structure of this manuscript is as follows. We start by providing a brief introduction into the DQMC method in Sec.~\ref{sec:QMC}. In Sec.~\ref{sec:instabilities} we illustrate numerical instabilities arising in the DQMC formalism and discuss their origin. Following this, we present (Sec.~\ref{sec:stabilization}) and benchmark (Sec.~\ref{sec:benchmarks}) different numerical stabilization schemes in the context of the computation of the equal-times Green's function and its determinant. Lastly, we turn to the calculation of the time-displaced Green's function in Sec.~\ref{sec:TDGF} before concluding and summarizing in Sec.~\ref{sec:discussion}.
+Although conceptually straightforward, care has to be taken in implementing DQMC because of inherent numerical instabilities arising from ill-conditioned matrix exponentials. Over time, many stabilization schemes \cite{Loh1989, Loh2005, Bai2011, Sorella1989, Assaad2002a} based on various matrix factorizations, such as singular value decomposition (SVD), modified Gram-Schmidt, and QR decomposition, have been proposed for lifting these numerical issues. It is the purpose of this manuscript to review some of these techniques and to compare them with respect to accuracy and speed. Particular emphasis is placed on concreteness and reproducibility: we provide implementations of all discussed algorithms as well as the code to recreate all the plots in this manuscript in form of the software library \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}, written in the Julia programming language\cite{Bezanson2017, JuliaNature2019} aspiring in the field of numerical computing. Readers are invited to open issues or pull requests at the repository to discuss, improve, and extend the list of stabilization routines. Beyond reproducibility, the software library is also intended to serve as an important abstraction allowing users to focus on the physical simulation instead of numerical implementation details.
 
-In the spirit of reproducible science, we provide implementations of all discussed algorithms, as well as the code to recreate all the plots of these notes, in form of the Julia package \href{http://github.com/crstnbr/StableDQMC.jl}{\texttt{StableDQMC.jl}}. This library is also intended to serve as an important abstraction layer: users can focus on the physical application rather than numerical instabilities. Readers are invited to open issues or pull requests at the repository to discuss the present or add new stabilization routines.
+Specifically, the structure of this manuscript is as follows. We start by providing a brief introduction into the DQMC method in Sec.~\ref{sec:QMC}. In Sec.~\ref{sec:instabilities} we illustrate numerical instabilities in the DQMC and discuss their origin. Following this, we demonstrate (Sec.~\ref{sec:stabilization}) how matrix factorizations can be utilized to remedy these numerical artifacts in matrix product chains. In Sec.~\ref{sec:etgf} we present and benchmark different schemes for stabilizing the computation of the equal-times Green's function, the fundamental building block of the DQMC method. Lastly, we turn to the calculation of time-displaced Green's functions in Sec.~\ref{sec:TDGF} before concluding and summarizing in Sec.~\ref{sec:discussion}.
 
 \section{Determinant Quantum Monte Carlo}\label{sec:QMC}
 
-We begin by recalling the determinant quantum Monte Carlo (DQMC) algorithm \cite{Blankenbecler1981} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a part $S_F$. The latter comprises fermion kinetics $T$ and boson-fermion interactions $V$. An example is the famous Hubbard model after decoupling the on-site
-interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a Hubbard-Stratonovich or Hirsch transformation in either the spin or charge channel \cite{Hirsch1983}. As per usual, the central quantity of interest is the partition function
+We begin by reviewing the essentials of the determinant quantum Monte Carlo method \cite{Blankenbecler1981, Loh2005, Scalapino1993, Santos2003, Assaad2002a} for a generic quantum field theory that can be split into a purely bosonic part $S_B$ and a contribution $S_F$ from itinerant fermions. The latter comprises both fermion kinetics, $T$, and boson-fermion interactions, $V$. A famous example is given by the Hubbard model after a decoupling of the on-site
+interaction $U n_{i, \uparrow} n_{i, \downarrow}$ by means of a continuous Hubbard-Stratonovich or a discrete Hirsch transformation \cite{Hirsch1983}\footnote{Depending on the decomposition channel, the bosonic field $\phi$ represents either spin or charge fluctuations in this case.}. The quantum statistical partition function is given by
 %
 \begin{equation}
 \mathcal{Z} = \int D\left( \psi, \psi^\dagger, \phi \right) e^{-S_B - S_F} \,.
 \end{equation}
 %
-The basic idea of DQMC is to switch from the $d$ dimensional quantum theory to a $D = d + 1$ dimensional classical theory. The extra finite dimension of the classical theory is imaginary time $\tau$. It has a length proportional to the inverse temperature $\beta = 1/T$ and is discretized into $M$ time slices, $\beta = M \Delta \tau$. Applying a Trotter-Suzuki decomposition \cite{Trotter1959, Suzuki1986} one obtains
+The first step in DQMC is to apply the quantum-classical mapping \cite{Sachdev2011} and switch from the $d$ dimensional quantum theory above to a $D = d + 1$ dimensional classical theory. Here, the extra finite dimension of the classical theory is given by imaginary time $\tau$ and has an extent proportional to the inverse temperature $\beta = 1/T$. Discretizing imaginary time into $M$ time slices, $\beta = M \Delta \tau$, and applying a Trotter-Suzuki decomposition \cite{Trotter1959, Suzuki1986} one obtains
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[\exp{\left( -\Delta\tau \sum_{l=1}^M \psi^\dagger \left[T + V_\phi\right] \psi \right)}\right]} \label{eq:discretizedpi} \,.
 \end{align}
 %
-Next, the exponential is separated which leads to a systematic error of the order $\mathcal{O}\left(\Delta\tau^2\right)$,
+A separation of the matrix exponential then leads to a systematic error of the order $\mathcal{O}\left(\Delta\tau^2\right)$ for the partition function,
 \begin{align}
-	e^{A + B} &\approx e^A e^B \quad \nonumber\\
+	e^{A + B} &\approx e^A e^B, \quad \nonumber\\
 	e^{-\Delta\tau (T + V)} &\approx e^{- \frac{\Delta\tau}{2}T} e^{-\Delta\tau V} e^{- \frac{\Delta\tau}{2}T} + \mathcal{O}\left(\Delta\tau^3\right), \nonumber\\
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \mathrm{Tr}{\left[ \prod_{l=1}^{m} B_l \right]} + \mathcal{O}\left(\Delta\tau^2\right). \label{eq:Ztr}
 \end{align}
 %
-Here, $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ are imaginary time slice propagators. Note that their potential contribution $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ depends on the boson $\phi$ due to fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \cite{Assaad2002a}, yields the fundamental form
+Here, $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\dagger V_\phi \psi} e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi}$ are imaginary time slice propagators. Note that the contribution $e^{-\Delta\tau \psi^\dagger V_\phi \psi}$ depends on the boson $\phi$ due to fermion-boson coupling. Rewriting the trace in \eqref{eq:Ztr} as a determinant, an identity which can be proven \cite{Assaad2002a}, yields the fundamental form
 %
 \begin{align}
 	\mathcal{Z} &= \int D\phi \ e^{-S_B} \det{G_\phi^{-1}} + \mathcal{O}\left(\Delta\tau^2\right), \label{eq:DQMC}
@@ -192,17 +194,17 @@ Here, $B_l = e^{- \frac{\Delta\tau}{2}\psi^\dagger T \psi} e^{-\Delta\tau \psi^\
 %
 where
 \begin{align}
-	G = \left( \mathbb{1} + B_M B_{M-1} \cdots B_1 \right)^{-1} \label{etgf}
+	G = \left[ \mathbb{1} + B_M B_{M-1} \cdots B_1 \right]^{-1} \label{etgf}
 \end{align}
 is the equal-time Green's function of the system.
 
-According to Eq.~\eqref{eq:DQMC}, the probability weight appearing in a Metropolis Monte Carlo scheme reads
+According to Eq.~\eqref{eq:DQMC}, the Metropolis weight appearing in DQMC reads
 \begin{align}
 	p = \min \left\{ 1 , e^{-\Delta S_\phi}  \dfrac{\det G}{\det G'} \right\}, \label{eq:metropolis}
 \end{align}
-which implies that, considering a generic update, one needs to compute the Green's function $G$ and it's determinant for both the current and the proposed state ($G'$) of the Markov walker. For local updates, however, one can typically avoid those costly calculations and rather compute the ratio of determinants in Eq.~\eqref{eq:metropolis} directly.
+which implies that, considering a generic update, one needs to compute the Green's function $G$ and it's determinant for both the current and the proposed state ($G'$) of the Markov walker. For local updates, however, one can typically avoid those explicit calculations and compute the ratio of determinants in Eq.~\eqref{eq:metropolis} directly\cite{Schattner2016}.
 
-Importantly, it is only under specific circumstances, such as the presence of a symmetry, that the integral kernel can be safely interpreted as a probability weight as $G_\phi$ and its determinant are generally complex valued. This is the famous sign problem \cite{Li2019}.
+Importantly, it is only under specific circumstances, such as the presence of a symmetry, that the integral kernel of the partition function can be safely interpreted as a probability weight since $G_\phi$ and its determinant are generally complex valued. This is the famous sign problem \cite{Li2019}.
 
 \section{Numerical instabilities}\label{sec:instabilities}
 
@@ -210,7 +212,7 @@ To showcase the typical numerical instabilities arising in the DQMC framework we
 \begin{align}
 	H = -t\sum_{\langle i,j \rangle} c_i^\dagger c_j + U \sum_i \left( n_{i\uparrow} - \frac{1}{2} \right) \left( n_{i\downarrow} - \frac{1}{2} \right) \label{eq:model},
 \end{align}
-and set the hopping amplitude to unity, $t=1$\footnote{We will consider the canonical discrete decoupling \cite{Hirsch1983} in the spin channel due to Hirsch.}.
+and set the hopping amplitude to unity, $t=1$\footnote{We will consider the canonical discrete decoupling \cite{Hirsch1983} in the spin channel due to Hirsch in our analysis.}.
 %\begin{align}
 %H = \left[
 %\begin{array}{cccccccc}
@@ -227,17 +229,17 @@ and set the hopping amplitude to unity, $t=1$\footnote{We will consider the cano
 
 
 
-As seen from Eq.~\eqref{etgf}, the building block of the equal-time Green's function is the slice matrix product chain
+As seen from Eq.~\eqref{etgf}, the building block of the equal-time Green's function is a product chain of time slice matrices. To simplify our purely numerical analysis below we assume that the slice matrices $B_i$ are independent of imaginary time,
 \begin{align}
-	B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}. \label{eq:Bchain}
+	B(\beta, 0) \equiv B_M B_{M-1} \cdots B_1 = \underbrace{B B \cdots B}_{M \textrm{ factors}}, \label{eq:Bchain}
 \end{align}
-where in the second equality  we have assumed that the slice matrices are independent of imaginary time to simplify our numerical analysis\footnote{From a computational complexity point of view, this simplification is irrelevant. It corresponds to assuming a constant Hubbard-Stratonovich field.}.
+which physically amounts to assuming a constant bosonic field $\phi = \textit{const}$.
 
-First, we consider the non-interacting system, $U=0$. In Fig.~\ref{fig:naive_vs_stable}, we show that a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the system are given by
+First, we consider the non-interacting system, $U=0$. As apparent from Fig.~\ref{fig:naive_vs_stable}, a naive computation of Eq.~\ref{eq:Bchain} is doomed to fail for $\beta \geq \beta_c \approx 10$. Leaving a discussion of the stabilization of the computation for the next section, let us highlight the origin of this instability. The eigenvalues of the non-interacting system are given by
 \begin{align}
-	&\epsilon_k = -2t\cos(k).
+	&\epsilon_k = -2t\cos(k),
 \end{align}
-The energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. Hence, a single positive definite slice matrix $B = e^{-\Delta \tau T}$ has a condition number of about $\kappa \approx e^{4|t|\Delta \tau}$, which gives $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$ for  the product chain $B(\tau, 0)$. This implies that the scales present in $B(\tau, 0)$ broaden exponentially at low temperatures $T=1/\beta$ and roundoff errors due to finite machine precision will spoil a naive computation. We can estimate the inverse temperature of this breakdown of the calculation for the data type \texttt{Float64}, that is double floating-point precision according to the IEEE 754 standard \cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. This gives $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching the data type to \texttt{Float128} (quadruple precision), we see in Fig.~\ref{fig:naive_vs_stable_float128} that the onset of roundoff errors is shifted to lower temperatures as expected.
+such that energy values are bounded by $-2t \leq \epsilon_k \leq 2t$. A single positive definite slice matrix $B = e^{-\Delta \tau T}$ therefore has a condition number of the order of $\kappa \approx e^{4|t|\Delta \tau}$ and the product chain $B(\tau, 0)$, Eq.~\eqref{eq:Bchain}, has $\kappa \approx e^{4|t|M\Delta \tau} = e^{4|t|\beta}$. This implies that the scales present in $B(\tau, 0)$ broaden exponentially at low temperatures $T=1/\beta$ leading to inevitable roundoff errors due to finite machine precision and a spoiled result. We can estimate the expected inverse temperature of this breakdown for the data type \texttt{Float64}, that is double floating-point precision according to the IEEE 754 standard \cite{Goldberg1991}, by solving $\kappa(\beta) \sim 10^{-17}$ for $\beta_c$. This gives $\beta_c \approx 10$ in good agreement with what we observe in Fig.~\ref{fig:naive_vs_stable}. Switching to the data type \texttt{Float128}\footnote{The datatype \texttt{Float128} is provided by the Julia package \href{https://github.com/JuliaMath/Quadmath.jl}{\texttt{Quadmath.jl}}.} (quadruple precision) with $\beta_c \approx 20$ in Fig.~\ref{fig:naive_vs_stable_float128}, the onset of roundoff errors is shifted to lower temperatures in accordance with expectations.
 
 Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obtained from a naive computation are generally not invertible such that the inversion in Eq.~\ref{etgf} is ill defined. This clearly prohibits a safe calculation of the equal-time Green's function and asks for more sophisticated techniques.
 
@@ -261,6 +263,7 @@ Another consequence of these numerical imprecisions is that the $B(\tau, 0)$ obt
 
 \section{\label{sec:stabilization}Stabilization: matrix multiplications}
 
+\subsection{Stabilization scheme}
 A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia this can be done by using the \texttt{BigFloat} data type\footnote{Technically, \texttt{BigFloat} has a finite, arbitrarily high precision.}. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly.}.
 
 
@@ -326,7 +329,7 @@ A QR decomposition reads
 \end{align}
 where we have split $R$ into a diagonal piece $D$ and upper triangular piece $T$. Hence, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is a real diagonal matrix, and $T$ is upper triangular. In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}\footnote{We use a pivoted QR in our analysis.}. Analogously, a decomposition into $UDT$ form is provided by \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
 
-\section{Stabilization: equal-time Green's function}
+\section{Stabilization: equal-time Green's function} \label{sec:etgf}
 
 \subsection{Inversion schemes}
 Looking at the equal-time Green's function in Eq.~\ref{etgf}, we have to be careful to keep scales separate as much as possible in adding the identity, which will wash out small singular values, and performing the inversion of $1 + B(\beta, 0)$.
@@ -586,7 +589,7 @@ A different scheme, analogous to Eq.~\ref{eq:inversion_loh}, where we split the 
 \end{align}
 with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
-We note in passing that \cite{Hirsch1988} has proposed an alternative method for computing the time-displaced Green's function based on a space-time matrix formulation of the problem. Although this technique has been successfully deployed in many-fermion simulations we won't discuss it here because of its subpar computational scaling: for a system composed of $N$ lattice sites, fermion flavors $f$, and imaginary time extent $M$ one has to invert (naively a $\mathcal{O}(x^3)$ operation) a matrix which takes up $\mathcal{O}((NMf)^2)$ memory.
+We note in passing that \cite{Hirsch1988} has proposed an alternative method for computing the time-displaced Green's function based on a space-time matrix formulation of the problem. Although this technique has been successfully deployed in many-fermion simulations we won't discuss it here because of its subpar computational scaling: for a system composed of $N$ lattice sites, fermion flavors $f$, and imaginary time extent $M$ one has to invert (naively a $\mathcal{O}(x^3)$ operation) a matrix which takes up $\mathcal{O}((NMf)^2)$ memory. \todo{mention Assaad's 2x2 matrix approach for getting both equal and time-displaced Green's functions}
 
 \begin{figure}[b]
 	\centering
