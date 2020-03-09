@@ -254,13 +254,13 @@ We can estimate the expected inverse temperature of this breakdown for the data 
 		\caption{128-bit floating point (\texttt{Float128}) \label{fig:naive_vs_stable_float128}}
 	\end{subfigure}
 	\vspace{5pt}
-	\caption[MyCaption]{\textbf{Numerical instabilities} due to finite machine precision (green) arising in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The dashed line (grey) indicates the expected floating point precision\protect\footnotemark. The arbitrary precision result (orange) is shown for comparison. Both considered binary floating point formats \texttt{Float64} (a) and \texttt{Float128} (b) are in compliance with the IEEE 754 standard.}
+	\caption[MyCaption]{\textbf{Numerical instabilities} due to finite machine precision (green) arising in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The dashed line (grey) indicates the expected floating point precision\protect\footnotemark. The arbitrary precision result (orange) is shown for comparison.}
 	\label{fig:naive_vs_stable}
 \end{figure}
 
 \footnotetext{We estimate the precision as $p = \log_{10}(2^{\textrm{fraction}})$, where $\textrm{fraction}$ is the mantissa of a given binary floating point format. This gives $p\sim 16$ for \texttt{Float64} and $p\sim 34$ for \texttt{Float128}.}
 
-\section{\label{sec:stabilization}Stabilization: matrix multiplications}
+\section{\label{sec:stabilization}Stabilization: time slice matrix multiplications}
 
 \subsection{Stabilization scheme}
 A trivial solution to the issue outlined above is to perform all numerical operations with arbitrary precision. In Julia this can be done by using the \texttt{BigFloat} data type\footnote{Technically, \texttt{BigFloat} has a finite, arbitrarily high precision.}. However, this comes at the expense of (unacceptable) slow performance due to algorithmic overhead and lack of hardware support. Arbitrary precision numerics is nevertheless a valuable tool and we will use it to benchmark the accuracy of stabilization methods below\footnote{For our non-interacting model system one can alternatively simply diagonalize the Hamiltonian and calculate the Green's function exactly.}.
@@ -311,7 +311,7 @@ The singular value decomposition (SVD) is given by
 \end{align}
 where $U$ and $V^\dagger$ are unitary and $S$ is real and diagonal.
 
-For computing the SVD of a matrix of regular floating point precision (\texttt{Matrix\{Float64\}}), Julia utilizes the heavily optimized routines provided by LAPACK \cite{LAPACK}. Concretely, there exist three different implementations of SVD algorithms:\footnote{Note that Fortran LAPACK functions are named according to realness and symmetries of the matrix. In Julia multiple-dispatch takes care of routing different matrix types to different \textit{methods}. The Julia function \texttt{gesdd} works for both real and complex matrices, i.e. there is no (need for) \texttt{cgesdd}.}
+For computing the SVD of a matrix of regular floating point precision (\texttt{Matrix\{Float64\}}), Julia utilizes the heavily optimized routines provided by LAPACK\footnote{We will report on results obtained with the LAPACK implementation OpenBLAS that ships with Julia. Qualitatively similar results have been found in an independent test based on Intel's Math Kernel Library (MKL).} \cite{LAPACK}. Concretely, there exist three different implementations of SVD algorithms:\footnote{Note that the names of LAPACK functions typically encode properties of the input matrix such as realness or symmetry. In Julia multiple-dispatch takes care of routing different matrix types to different \textit{methods}. The Julia function \texttt{gesdd} works for both real and complex matrices, that is there is no (need for) \texttt{cgesdd}.}
 \begin{itemize}
 	\item \texttt{gesdd} (default): Divide-and-conquer (D\&C)
 	\item \texttt{gesvd}: Conventional
@@ -326,14 +326,37 @@ A QR decomposition reads
 \end{align}
 where $Q$ is unitary, $R$ is upper triangular, and we have split $R$ into a diagonal part $D$ and an upper triangular part $T$ in the second step. Specifically, $U = Q$ is unitary, $D = \textrm{diag}(R)$ is real and diagonal, and $T$ is upper triangular.
 
-In Julia, one can obtain the $QR$ factored form of a matrix by calling the function \texttt{qr} from the standard library \texttt{LinearAlgebra}\footnote{We consider the pivoted QR throughout our analysis.}. A factorization into $UDT$ form is provided by analogous functions \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
+In Julia, one can obtain the $QR$ factored form of a matrix using \texttt{qr} from the standard library \texttt{LinearAlgebra}. We will consider the pivoted QR, \texttt{qr(M, Val\{true\})}, based on LAPACK's \texttt{geqp3} in our analysis. A factorization into $UDT$ form is provided by functions \texttt{udt} and \texttt{udt!} in \texttt{StableDQMC.jl}.
+
+
+\subsection{Benchmarks}
+
+\subsubsection{Accuracy}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\textwidth]{figures/decomp_comparison_simple.pdf}
+	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values seem to lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$).}
+	\label{fig:decomp_comparison_simple}
+\end{figure}
+
+Supplementing our general considerations above, we test the correctness of the matrix product stabilization procedure with respect to varying the concrete SVD and QR factorization algorithms. Fig.~\ref{fig:decomp_comparison_simple} shows the logarithmic singular values of the slice matrix product chain $B(\beta, 0)$ as a function of inverse temperature $\beta$ obtained from employing different matrix decompositions. Clearly, the accuracy of the computed singular values shows a strong dependence on the chosen factorization algorithm. While the results for the QR decomposition and Jacobi SVD seem to fall on top of the exact result, we observe large deviations for the conventional and D\&C SVD algorithms. This effect is particularly pronounced at low temperatues, $\beta \gtrsim 25$. The fact that small scales are lost while large scales remain relatively accurate can be understood from LAPACK's SVD errorbounds \cite{errorbounds}.
+
+\subsubsection{Efficiency}
+Turning to computational efficiency, we illustrate runtime cost measurements for all considered SVD variants relative to the QR decomposition in Fig.~\ref{fig:benchmark_decomps}. We find that the conventional SVD and Jacobi SVD are an order of magnitude above the QR baseline while only the divide-and-conquer algorithm shows comparable performance. Among the SVD variants, the Jacobi SVD is the most costly by a large margin, having about twice the runtime of the conventional SVD for small system sizes.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\textwidth]{figures/benchmark_decomps.pdf}
+	\caption{\textbf{Computational efficiency of matrix decompositions}. Shown is the runtime cost of the factorization of a complex matrix of size $N \times N$ by means of various SVD algorithms relative to the QR decomposition. \label{fig:benchmark_decomps}}
+\end{figure}
+
 
 \section{Stabilization: equal-time Green's function} \label{sec:etgf}
 
 Similar to the considerations in Sec.~\ref{sec:instabilities}, a naive computation of the Green's function according to Eq.~\eqref{etgf} is potentially unstable because of numerical roundoff errors due to finite machine precision. In particular, adding the identity to the ill-conditioned slice matrix chain $B(\tau, 0)$ will generally wash out small singular values and will lead to a non-invertible result such that the subsequent inversion in Eq.~\eqref{etgf} is ill-defined. This clearly prohibits a safe calculation of the equal-time Green’s function and asks for numerical stabilization techniques.
 
 \subsection{Inversion schemes}
-As for the matrix products in Eq.~\eqref{eq:stabmult}, the strategy will be to keep exponentially spread scales as separated as possible. A straightforward scheme \cite{Santos2003, Assaad2002a} (\texttt{inv\_one\_plus}) to add the unit matrix and perform the inversion of $\mathbb{1} + B(\tau, 0)$ in a stabilized manner is given by
+As for the time slice matrix products in Eq.~\eqref{eq:stabmult}, the strategy will be to keep exponentially spread scales as separated as possible. A straightforward scheme \cite{Santos2003, Assaad2002a} (\texttt{inv\_one\_plus}) to add the unit matrix and perform the inversion of $\mathbb{1} + B(\tau, 0)$ in a stabilized manner is given by
 
 \begin{align}
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber \\
@@ -353,11 +376,11 @@ U^\dagger X^{-1} + D = \U + \D = \left[
 \right].
 \end{align}
 
-However, as it turns out, this scheme will nonetheless fail to give accurate results for the equal-time Green's function when combined with certain matrix decompositions, as we will demonstrate below. For this reason, we consider another stabilization procedure put forward by Loh \textit{et al.} \cite{Loh2005, Loh1989} (\texttt{inv\_one\_plus\_loh}), in which one initially separates the scales of the diagonal matrix $D$ into two factors $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$,
+As we will demonstrate for the time-displaced Green's function in Sec.~\ref{sec:TDGF}, a procedure like Eq.~\eqref{eq:inversion} based on a single intermediate decomposition will still fail to give accurate results for some of the matrix decompositions. For this reason, we consider another stabilization procedure put forward by Loh \textit{et al.} \cite{Loh2005, Loh1989} (\texttt{inv\_one\_plus\_loh}), in which one initially separates the scales of the diagonal matrix $D$ into two factors $D_p = \max(D, 1)$ and $D_m = \min(D, 1)$,
 \begin{align}
 D_p = \Dp, \quad D_m = \Dm,
 \end{align}
-and perform two intermediate decompositions,
+and performs two intermediate decompositions,
 \begin{align}
 	G &= [\mathbb{1} + UDX]^{-1} \nonumber\\
 	&= [\mathbb{1} + UD_mD_pX]^{-1} \nonumber\\
@@ -394,19 +417,9 @@ where $U_r = X^{-1}u$, $D_r = d$, and $X_r = x$.
 
 \subsection{Benchmarks}\label{sec:benchmarks}
 
-In this section, we assess how different matrix decomposition algorithms perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed. All results are for the Hubbard model, Eq.~\ref{eq:model}, with $U=0$ and $U=1$ (alpha transparent in all plots)
+We assess how different matrix decomposition algorithms perform in stabilized computations of $B(\beta, 0)$, the Green's function $G$, and its determinant $\det G$, both with respect to accuracy and speed. All results are for the Hubbard model, Eq.~\ref{eq:model}, with $U=0$ and $U=1$ (alpha transparent in all plots)
 
 \subsubsection{Accuracy}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.8\textwidth]{figures/decomp_comparison_simple.pdf}
-	\caption{\textbf{Comparison of matrix decompositions} to heal the numerical instabilities in the calculation of the slice matrix product chain $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. The QR and Jacobi SVD singular values seem to lie on top of the exact ones whereas regular SVD and divide-and-conquer SVD show large deviations at low temperatures $\beta \gtrsim 25$ ($\Delta \tau = 0.1$).}
-	\label{fig:decomp_comparison_simple}
-\end{figure}
-
-Before benchmarking the efficiency of an algorithm, it is crucial to check it's correctness first. Fig.~\ref{fig:decomp_comparison_simple} shows the log singular values of the slice matrix product chain $B(\beta, 0)$ stabilized with different matrix decompositions as a function of inverse temperature $\beta$. While QR and Jacobi SVD seem to lie on top of the numerically exact result, we observe large deviations for the simple and D\&C SVD algorithms at low temperatues ($\beta \gtrsim 25)$.\footnote{The fact that small scales are lost while large scales remain relatively accurate can be understood from LAPACK's SVD errorbounds \cite{errorbounds}.}\\
-
 
 \begin{figure}
 	\centering
@@ -420,30 +433,29 @@ Before benchmarking the efficiency of an algorithm, it is crucial to check it's 
 \caption{\texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh} \label{fig:greens_accuracy_loh}}
 	\end{subfigure}
 	\vspace{5pt}
-	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and the inversion schemes. Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent).}
+	\caption{\textbf{Accuracy of the Green's function} obtained from stabilized computations using the listed matrix decompositions and inversion schemes. Shown is ${\Delta G = \log(\textrm{max}(\textrm{abs}(G - G_{\textrm{exact}})))}$ for $U=0$ (solid) and $U=1$ (alpha transparent).}
 \end{figure}
 
-Turning to the equal-time Green's function, Eq.~\ref{etgf}, we take the results for the slice matrix chains and perform the inversions according to the schemes presented above. We take the maximum absolute difference between the obtained Green's functions and the exact $G$ as an accuracy measure. The findings for the simple inversion scheme \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, are shown in Fig.~\ref{fig:greens_accuracy_regularinv}. At high temperatures and for $U=0$, all decompositions give the correct Green's function up to some limit close to floating point precision. However, at low temperatures only the QR decomposition and the Jacobi SVD reproduce $G_{\textrm{exact}}$ reliably. They have the highest accuracy by a large margin, followed by the other SVD variants, which  fail to reproduce the exact result accurately. As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the more careful procedure \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does generally improve the accuracy but the deviations seen for the regular and D\&C SVD schemes are still of order unity at low temperatures.
+Starting from a stabilized computation of $B(\beta,0)$, Sec.~\ref{sec:stabilization}, we calculate the equal-time Green's function by performing the inversion according to the schemes outlined above and varying the applied matrix factorization. In Fig.~\ref{fig:greens_accuracy_regularinv} we show our findings for \texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}, where we have taken the maximum absolute difference between the computed and the exact Green's function as an accuracy measure. At high temperatures and for $U=0$, we observe that all decompositions lead to a good approximation of $G$ with an accuracy close to floating point precision. However, when turning to lower temperatures the situations changes dramatically. We find that only the QR decomposition and the Jacobi SVD deliver the Green's function reliably. Compared to the other SVD variants, which fall behind by a large margin and fail to reproduce the exact result, they consistently show about optimal accuracy even in the presence of interactions ($U=1$). As displayed in Fig.~\ref{fig:greens_accuracy_loh}, switching to the inversion scheme \texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh}, does generally improve the accuracy but deviations of the regular SVD and D\&C SVD remain of the order of unity at the lowest temperatures.
 
+These findings suggest that only the QR decomposition and the Jacobi SVD, irrespective of the inversion procedure, are suited for computing the equal time Green's function in DQMC reliably.
 
-\begin{figure}
-	\centering
-	\begin{subfigure}{0.48\textwidth}
-		\includegraphics[width=\textwidth]{figures/accuracy_det_svd_regularinv.pdf}
-		\caption{\texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
-	\end{subfigure}%
-	\hspace{10pt}
-	\begin{subfigure}{0.48\textwidth}
-		\includegraphics[width=\textwidth]{figures/accuracy_det_svd_loh.pdf}
-		\caption{\texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh} \label{fig:det_accuracy_loh}}
-	\end{subfigure}
-	\vspace{5pt}
-	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion schemes. Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent).}
-\end{figure}
-
-In Figs.~\ref{fig:det_accuracy_regularinv},~\ref{fig:det_accuracy_loh} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance\footnote{For local updates on can generally avoid full calculations of Green's function determinants by exploiting locality and performing a Laplace expansion since only ratios of determinants appear in Eq.~\ref{eq:metropolis}. In fact, in an optimal implementation the computation of the acceptance rate is $O(1)$ rather than $O(N^3)$.}, obtained for all combinations of matrix decompositions and inversion schemes. Both the QR decomposition and the Jacobi SVD lead to accurate results for all accessed temperatures, irrespective of the employed inversion scheme. The other two SVD based methods on the other hand show large relative deviations for both \texttt{inv\_one\_plus} and \texttt{inv\_one\_plus\_loh}.
-
-These findings suggest that only the QR decomposition and the Jacobi SVD are suited for computing both the equal time Green's function and it's determinant reliably, irrespective of the inversion procedure.
+%\begin{figure}
+%	\centering
+%	\begin{subfigure}{0.48\textwidth}
+%		\includegraphics[width=\textwidth]{figures/accuracy_det_svd_regularinv.pdf}
+%		\caption{\texttt{inv\_one\_plus}, Eq.~\ref{eq:inversion}. \label{fig:det_accuracy_regularinv}}
+%	\end{subfigure}%
+%	\hspace{10pt}
+%	\begin{subfigure}{0.48\textwidth}
+%		\includegraphics[width=\textwidth]{figures/accuracy_det_svd_loh.pdf}
+%		\caption{\texttt{inv\_one\_plus\_loh}, Eq.~\ref{eq:inversion_loh} \label{fig:det_accuracy_loh}}
+%	\end{subfigure}
+%	\vspace{5pt}
+%	\caption{\textbf{Accuracy of the determinant} of the equal-time Green's function obtained from stabilized computations using the listed matrix decompositions and the inversion schemes. Shown are results for $U=0$ (solid) and $U=1$ (alpha transparent).\label{fig:det_accuracy}}
+%\end{figure}
+%
+%In Fig.~\ref{fig:det_accuracy} we show the logarithm of the relative error of the Green's function determinant, relevant in the Metropolis acceptance\footnote{For local updates on can generally avoid full calculations of Green's function determinants by exploiting locality and performing a Laplace expansion since only ratios of determinants appear in Eq.~\ref{eq:metropolis}. In fact, in an optimal implementation the computation of the acceptance rate is $O(1)$ rather than $O(N^3)$.}, obtained for all combinations of matrix decompositions and inversion schemes. Both the QR decomposition and the Jacobi SVD lead to accurate results for all accessed temperatures, irrespective of the employed inversion scheme. The other two SVD based methods on the other hand show large relative deviations for both \texttt{inv\_one\_plus} and \texttt{inv\_one\_plus\_loh}.
 
 %\begin{table}[b]
 %	\bgroup
@@ -514,15 +526,9 @@ These findings suggest that only the QR decomposition and the Jacobi SVD are sui
 
 \subsubsection{Efficiency}
 
-Independent of the deployed inversion scheme, matrix decompositions account for most of the computational cost in the Green's function calculation. Fig.~\ref{fig:benchmark_decomps} illustrates the raw efficiency of all SVDs relative to the QR decomposition. While the conventional SVD and the Jacobi SVD are about an order of magnitude slower, the divide-and-conquer based SVD is in the same ballpark as the QR decomposition. The Jacobi SVD variant is, by far, the most costly of all considered matrix decompositions, being 10 times more time consuming than the QR decomposition, even for small system sizes.
+Independent of the employed inversion scheme, matrix decompositions are expected to be the performance bottleneck in the Green's function computation. We hence expect the speed differences apparent in Fig.~\ref{fig:benchmark_decomps} to dominate benchmarks of the full Green's function calculation as well. This anticipation is qualitatively confirmed in Fig.~\ref{fig:greens_benchmark}, which shows the runtime cost of the Green's function computation for both inversion schemes and all matrix decompositions relative to the QR. While the divide-and-conquer SVD is in the same ballpark as the QR decomposition the other SVD algorithms fall behind by a large margin (an order of magnitude) for both inversion procedures. Importantly, this apparent runtime difference is increasing with system size. The observation that the relative slowdown factor is larger for the inversion scheme \texttt{inv\_one\_plus\_loh} can be understood from the fact that it requires one additional intermediate matrix decomposition.
 
-Since the decompositions represent the performance bottleneck, we expect that these speed differences propagate and dominate benchmarks of the full Green's function computations. As visible in Figs.~\ref{fig:greens_accuracy_regularinv} and \ref{fig:greens_accuracy_loh}, this anticipation is qualitatively confirmed up to numerical deviations. Independent of the deployed inversion scheme, the divide-and-conquer SVD can compete with the QR decomposition in terms of speed whereas the other SVD algorithms unambiguously fall behind. We note that the relative slowdown factor is larger for the scheme by Loh \textit{et al.}, which is understood from the fact that it requires two intermediate matrix decompositions rather than one.
-
-\begin{figure}
-	\includegraphics[width=0.8\textwidth]{figures/benchmark_decomps.pdf}
-	\caption{\textbf{Efficiency of different matrix decompositions}. Shown are the slowdown factors of single SVDs relative to a QR decomposition of a complex matrix of size $N \times N$. \label{fig:benchmark_decomps}}
-\end{figure}
-
+Combined with the accuracy results these findings suggest that among the QR decomposition and the Jacobi SVD, which are found to be reliable in both inversion schemes, the QR decomposition has a significantly lower runtime cost and is therefore to be preferred for DQMC.
 
 \begin{figure}
 	\centering
@@ -536,7 +542,7 @@ Since the decompositions represent the performance bottleneck, we expect that th
 		\caption{\texttt{inv\_one\_plus\_loh}, Eq.~\eqref{eq:inversion_loh}. \label{fig:greens_benchmark_loh}}
 	\end{subfigure}
 	\vspace{5pt}
-	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion schemes. Shown are results for $U=0$.}
+	\caption{\textbf{Efficiency of the stabilized Green's function calculation} using the listed matrix decompositions and the inversion schemes. Shown are results for $U=0$.\label{fig:greens_benchmark}}
 \end{figure}
 
 
@@ -590,7 +596,7 @@ with $U_r = X_R^{-1} u$, $D_r = d$, and $X_r = x U_L^\dagger$.
 
 We note in passing that \cite{Hirsch1988} has proposed an alternative method for computing the time-displaced Green's function based on a space-time matrix formulation of the problem. Although this technique has been successfully deployed in many-fermion simulations we won't discuss it here because of its subpar computational scaling: for a system composed of $N$ lattice sites, fermion flavors $f$, and imaginary time extent $M$ one has to invert (naively a $\mathcal{O}(x^3)$ operation) a matrix which takes up $\mathcal{O}((NMf)^2)$ memory. \todo{mention Assaad's 2x2 matrix approach for getting both equal and time-displaced Green's functions}
 
-\begin{figure}[b]
+\begin{figure}
 	\centering
 	\begin{subfigure}{0.48\textwidth}
 		\includegraphics[width=\textwidth]{figures/accuracy_tdgf_U0.pdf}
@@ -616,7 +622,7 @@ When switching to the inversion scheme \texttt{inv\_sum\_loh}, the situation cha
 
 Finally, we compare the computational efficiency of the Jacobi SVD combined with the regular inversion and the QR decomposition paired with \texttt{inv\_sum\_loh}. As shown in Fig.~\ref{fig:tdgf_benchmark}, we find that the latter is consistently faster for all considered system sizes. In relative terms, the SVD based approach is at least a factor of two slower and seems to display inferior scaling with the chain length $N$. This indicates that in a DQMC context numerical stabilization via QR decompositions should be preferred despite the higher complexity of the inversion scheme.
 
-\begin{figure}[t]
+\begin{figure}
 	\centering
 	\includegraphics[width=0.8\textwidth]{figures/benchmark_jacobi_vs_qr_tdgf.pdf}
 	\caption{\textbf{Efficiency of the time-displaced Green's function} obtained from stabilized computations using the QR decomposition in combination with the inversion scheme \texttt{inv\_sum\_loh}, Eq.~\eqref{eq:inversion_tdgf_loh} and the Jacobi SVD paired up with the regular inversion scheme \texttt{inv\_sum}, Eq.~\eqref{eq:inversion_tdgf}. Measurements are taken over multiple runs at $\tau = \beta/2 = 20$. The inset show the slowdown of the Jacobi SVD relative to the QR based approach. \label{fig:tdgf_benchmark}}
