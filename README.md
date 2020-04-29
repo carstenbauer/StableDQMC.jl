@@ -31,7 +31,7 @@
 
 This is a library of numerically stable linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo).
 
-For more details, check out the [documentation](https://crstnbr.github.io/StableDQMC.jl/dev) and the accompanyig [paper](https://github.com/crstnbr/StableDQMC.jl/raw/master/paper/stabledqmc.pdf), in which we describe and benchmark a few specific algorithms. The plots in this paper have been generated with the notebooks in [the notebook directory](https://github.com/crstnbr/StableDQMC.jl/tree/master/notebooks) of this repository.
+For more details, check out the [documentation](https://crstnbr.github.io/StableDQMC.jl/dev) and the accompanyig [paper](http://arxiv.org/abs/2003.05286), in which we describe and benchmark a few specific algorithms. The plots in this paper have been generated with the notebooks in [the notebook directory](https://github.com/crstnbr/StableDQMC.jl/tree/master/notebooks) of this repository.
 
 Feel free to give feedback, open issues, or contribute useful algorithms yourself! 🙂
 
