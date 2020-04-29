@@ -29,3 +29,7 @@ test/benchmark/*.json
 docs/build/
 docs/site/
 /Manifest.toml
+
+paper/scipost_reponse.md
+**/*.h5
+paper/preprintv2/diff.tex

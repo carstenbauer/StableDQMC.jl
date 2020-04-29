@@ -4,6 +4,7 @@ using LinearAlgebra, Pkg
 using Requires
 
 include("helpers.jl")
+include("helpers_sdw.jl")
 include("qr_udt.jl")
 include("svd.jl")
 
@@ -11,6 +12,7 @@ include("svd.jl")
 # Slice matrix chain B_M .... B_1
 export calc_Bchain, calc_Bchain_qr, calc_Bchain_svd
 export calc_tdgf_qr, calc_tdgf_svd
+export calc_Bchain_svd_faster
 
 
 # QR / UDT
