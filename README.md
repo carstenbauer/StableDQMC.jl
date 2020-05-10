@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3819445.svg)](https://doi.org/10.5281/zenodo.3819445)
+
 <div align="center">
   <a href="https://crstnbr.github.io/StableDQMC.jl/dev">
     <img src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo_large.png" alt="StableDQMC.jl" width="400">
