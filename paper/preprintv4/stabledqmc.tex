@@ -239,7 +239,7 @@ We can estimate the expected inverse temperature of this breakdown for the data 
 		\caption{128-bit floating point (\texttt{Float128}) \label{fig:naive_vs_stable_float128}}
 	\end{subfigure}
 	\vspace{5pt}
-	\caption[MyCaption]{\textbf{Numerical instabilities} due to finite machine precision arising in the calculation of the time slice matrix chain product $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. Different lines represent logarithmic singular values as observed in naive (green) and arbitrary precision computations (orange). The dashed line (grey) indicates the expected floating point accuracy\protect\footnotemark.}
+	\caption[MyCaption]{\textbf{Numerical instabilities} due to finite machine precision arising in the calculation of the time slice matrix chain product $B_M B_{M-1} \cdots B_1$ for model~\eqref{eq:model}. Different lines represent logarithmic singular values as observed in naive (green) and arbitrary precision computations (orange) for a $N=4$ system. Due to (quasi) degeneracies only 5 out of 8 singular values are visually distinguishable. The dashed line (grey) indicates the expected floating point accuracy\protect\footnotemark.}
 	\label{fig:naive_vs_stable}
 \end{figure}
 
@@ -618,7 +618,7 @@ We note that Hirsch\cite{Hirsch1988, Santos2003} has proposed an alternative met
 \subsection{Benchmarks}
 \subsubsection{Accuracy}
 
-In Fig.~\ref{fig:tdgf_accuracy}, we show the logarithmic, maximal, absolute deviation of the time-displaced Green's function from the arbitrary precision result as a function of time-displacement $\tau$ at inverse temperature $\beta=40$. Focusing on the inversion scheme \texttt{inv\_sum} first, Fig.~\ref{fig:tdgf_accuracy_regularinv}, both regular and D\&C SVD clearly fail to capture the intrinsic scales sufficiently and errors much beyond floating point precision are visible. Although the QR decomposition systematically leads to equally or more accurate results for all considered imaginary times, it fails to be reliable at long times $\tau\sim\beta/2$ (the Green's function is anti-periodic in $\tau$). Only the Jacobi-method based SVD leads to an accurate Green's function at all imaginary times.
+In Fig.~\ref{fig:tdgf_accuracy}, we show the logarithmic, maximal, absolute deviation of the time-displaced Green's function from the arbitrary precision result as a function of time-displacement $\tau$ at inverse temperature $\beta=40$. Focusing on the inversion scheme \texttt{inv\_sum} first, Fig.~\ref{fig:tdgf_accuracy_regularinv}, both regular and D\&C SVD clearly fail to capture the intrinsic scales sufficiently and errors much beyond floating point precision are visible. Compared to these SVD variants, the QR decomposition systematically leads to equally or more accurate results. However, it clearly fails to be reliable at long times $\tau\sim\beta/2$ (the Green's function is anti-periodic in $\tau$). Only the Jacobi-method based SVD produces accurate Green's function values for all considered imaginary times.
 
 Switching to the inversion scheme \texttt{inv\_sum\_loh}, the situation changes, as illustrated in Fig.~\ref{fig:tdgf_accuracy_loh}. While the non-Jacobi SVDs still have insufficient accuracy, the result for the QR decomposition improves dramatically compared to \texttt{inv\_sum} and leads to stable Green's function estimates up to floating point precision along the entire imaginary time axis.
 
