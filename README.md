@@ -1,8 +1,8 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3819445.svg)](https://doi.org/10.5281/zenodo.3819445)
 
 <div align="center">
-  <a href="https://crstnbr.github.io/StableDQMC.jl/dev">
-    <img src="https://raw.githubusercontent.com/crstnbr/StableDQMC.jl/master/docs/src/assets/logo_large.png" alt="StableDQMC.jl" width="400">
+  <a href="https://carstenbauer.github.io/StableDQMC.jl/dev">
+    <img src="https://raw.githubusercontent.com/carstenbauer/StableDQMC.jl/master/docs/src/assets/logo_large.png" alt="StableDQMC.jl" width="400">
   </a>
 </div>
 
@@ -15,11 +15,11 @@
 | [![][docs-dev-img]][docs-dev-url] | ![][lifecycle-img] [![][github-ci-img]][github-ci-url] [![][codecov-img]][codecov-url] [![][pkgeval-img]][pkgeval-url] | [![][slack-img]][slack-url] [![][license-img]][license-url] |
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-dev-url]: https://crstnbr.github.io/StableDQMC.jl/dev
-[github-ci-img]: https://github.com/crstnbr/StableDQMC.jl/workflows/Run%20tests/badge.svg
-[github-ci-url]: https://github.com/crstnbr/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22
-[codecov-img]: https://img.shields.io/codecov/c/github/crstnbr/StableDQMC.jl/master.svg?label=codecov
-[codecov-url]: http://codecov.io/github/crstnbr/StableDQMC.jl?branch=master
+[docs-dev-url]: https://carstenbauer.github.io/StableDQMC.jl/dev
+[github-ci-img]: https://github.com/carstenbauer/StableDQMC.jl/workflows/Run%20tests/badge.svg
+[github-ci-url]: https://github.com/carstenbauer/StableDQMC.jl/actions?query=workflow%3A%22Run+tests%22
+[codecov-img]: https://img.shields.io/codecov/c/github/carstenbauer/StableDQMC.jl/master.svg?label=codecov
+[codecov-url]: http://codecov.io/github/carstenbauer/StableDQMC.jl?branch=master
 
 [pkgeval-img]: https://juliaci.github.io/NanosoldierReports/pkgeval_badges/S/StableDQMC.svg
 [pkgeval-url]: https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html
@@ -33,7 +33,7 @@
 
 This is a library of numerically stable linear algebra routines for performing inversions as they appear in the calculation of Green's functions in [determinant Quantum Monte Carlo](https://en.wikipedia.org/wiki/Quantum_Monte_Carlo).
 
-For more details, check out the [documentation](https://crstnbr.github.io/StableDQMC.jl/dev) and the accompanyig [paper](https://scipost.org/10.21468/SciPostPhysCore.2.2.011), in which we describe and benchmark a few specific algorithms. The plots in this paper have been generated with the notebooks in [the notebook directory](https://github.com/crstnbr/StableDQMC.jl/tree/master/notebooks) of this repository.
+For more details, check out the [documentation](https://carstenbauer.github.io/StableDQMC.jl/dev) and the accompanyig [paper](https://scipost.org/10.21468/SciPostPhysCore.2.2.011), in which we describe and benchmark a few specific algorithms. The plots in this paper have been generated with the notebooks in [the notebook directory](https://github.com/carstenbauer/StableDQMC.jl/tree/master/notebooks) of this repository.
 
 Feel free to give feedback, open issues, or contribute useful algorithms yourself! 🙂
 
